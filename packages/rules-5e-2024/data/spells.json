@@ -1,0 +1,17 @@
+[
+  { "name": "Bless", "level": 1, "school": "Enchantment", "castingTime": "Action", "range": "30 ft.", "duration": "Concentration, 1 minute", "summary": "Up to three creatures add 1d4 to attack rolls and saving throws." },
+  { "name": "Cure Wounds", "level": 1, "school": "Abjuration", "castingTime": "Action", "range": "Touch", "duration": "Instant", "summary": "A creature you touch regains 2d8 + spellcasting modifier HP (2024: 2d8 base)." },
+  { "name": "Guiding Bolt", "level": 1, "school": "Evocation", "castingTime": "Action", "range": "120 ft.", "duration": "1 round", "summary": "Ranged spell attack, 4d6 radiant; next attack against the target has advantage." },
+  { "name": "Healing Word", "level": 1, "school": "Abjuration", "castingTime": "Bonus action", "range": "60 ft.", "duration": "Instant", "summary": "A creature regains 2d4 + spellcasting modifier HP at range." },
+  { "name": "Magic Missile", "level": 1, "school": "Evocation", "castingTime": "Action", "range": "120 ft.", "duration": "Instant", "summary": "Three darts, 1d4+1 force each, auto-hit." },
+  { "name": "Shield", "level": 1, "school": "Abjuration", "castingTime": "Reaction", "range": "Self", "duration": "1 round", "summary": "+5 AC until the start of your next turn, including against the triggering attack." },
+  { "name": "Sleep", "level": 1, "school": "Enchantment", "castingTime": "Action", "range": "60 ft.", "duration": "Concentration, 1 minute", "summary": "2024: creatures in a 5-ft-radius sphere make a Wisdom save or gain Incapacitated, then Unconscious at end of their next turn if still in range." },
+  { "name": "Thunderwave", "level": 1, "school": "Evocation", "castingTime": "Action", "range": "Self (15-ft cube)", "duration": "Instant", "summary": "2d8 thunder, Constitution save for half; failed targets are pushed 10 ft." },
+  { "name": "Hold Person", "level": 2, "school": "Enchantment", "castingTime": "Action", "range": "60 ft.", "duration": "Concentration, 1 minute", "summary": "A humanoid makes a Wisdom save or is Paralyzed; repeats the save at the end of each turn." },
+  { "name": "Misty Step", "level": 2, "school": "Conjuration", "castingTime": "Bonus action", "range": "Self", "duration": "Instant", "summary": "Teleport up to 30 ft. to a space you can see." },
+  { "name": "Spiritual Weapon", "level": 2, "school": "Evocation", "castingTime": "Bonus action", "range": "60 ft.", "duration": "Concentration, 1 minute (2024)", "summary": "Floating weapon; bonus action melee spell attack for 1d8 + modifier force." },
+  { "name": "Web", "level": 2, "school": "Conjuration", "castingTime": "Action", "range": "60 ft.", "duration": "Concentration, 1 hour", "summary": "20-ft cube of webs; Dexterity save or Restrained. Flammable." },
+  { "name": "Counterspell", "level": 3, "school": "Abjuration", "castingTime": "Reaction", "range": "60 ft.", "duration": "Instant", "summary": "2024: the caster makes a Constitution save against your spell save DC or the spell fails." },
+  { "name": "Dispel Magic", "level": 3, "school": "Abjuration", "castingTime": "Action", "range": "120 ft.", "duration": "Instant", "summary": "Ends spells of level 3 or lower on a target; higher-level spells need an ability check (DC 10 + spell level)." },
+  { "name": "Fireball", "level": 3, "school": "Evocation", "castingTime": "Action", "range": "150 ft.", "duration": "Instant", "summary": "20-ft-radius sphere, 8d6 fire, Dexterity save for half." }
+]

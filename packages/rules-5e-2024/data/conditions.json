@@ -1,0 +1,17 @@
+[
+  { "name": "Blinded", "summary": "Can't see; automatically fails sight checks; attack rolls against it have advantage, its attacks have disadvantage." },
+  { "name": "Charmed", "summary": "Can't attack the charmer or target it with harmful effects; the charmer has advantage on social checks against it." },
+  { "name": "Deafened", "summary": "Can't hear; automatically fails hearing checks." },
+  { "name": "Exhaustion", "summary": "2024: each level gives -2 to d20 tests and -5 ft. speed; level 6 is death. Long rest removes one level." },
+  { "name": "Frightened", "summary": "Disadvantage on ability checks and attacks while the source is in sight; can't willingly move closer to it." },
+  { "name": "Grappled", "summary": "Speed 0; disadvantage on attacks against anyone except the grappler; escape with a Strength or Dexterity save against the grappler's DC." },
+  { "name": "Incapacitated", "summary": "Can't take actions, bonus actions, or reactions; concentration breaks; 2024: speed 0 and disadvantage on initiative." },
+  { "name": "Invisible", "summary": "Can't be seen without magic or special sense; advantage on initiative (2024); attacks against it have disadvantage, its attacks have advantage." },
+  { "name": "Paralyzed", "summary": "Incapacitated, can't move or speak, auto-fails Strength and Dexterity saves; attacks against it have advantage and hits within 5 ft. are critical." },
+  { "name": "Petrified", "summary": "Turned to stone; Incapacitated, weight ×10, resistance to all damage, immune to poison and disease." },
+  { "name": "Poisoned", "summary": "Disadvantage on attack rolls and ability checks." },
+  { "name": "Prone", "summary": "Can only crawl; disadvantage on attacks; melee attacks within 5 ft. against it have advantage, ranged attacks have disadvantage. Standing costs half movement." },
+  { "name": "Restrained", "summary": "Speed 0; attacks against it have advantage, its attacks have disadvantage; disadvantage on Dexterity saves." },
+  { "name": "Stunned", "summary": "Incapacitated, can only speak falteringly, auto-fails Strength and Dexterity saves; attacks against it have advantage." },
+  { "name": "Unconscious", "summary": "Incapacitated, unaware, drops what it holds and falls prone; auto-fails Strength and Dexterity saves; attacks have advantage and hits within 5 ft. are critical." }
+]
