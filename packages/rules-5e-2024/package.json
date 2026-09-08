@@ -1,0 +1,18 @@
+{
+  "name": "@cardinal/rules-5e-2024",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Editable data layer for D&D 5e (2024 revision): encounter budgets, CR XP, level thresholds, price tables, sample stat blocks and spells.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@cardinal/core": "workspace:*"
+  }
+}

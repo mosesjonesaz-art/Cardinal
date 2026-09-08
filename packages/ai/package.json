@@ -1,0 +1,20 @@
+{
+  "name": "@cardinal/ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "LLM generation layer for Cardinal: provider interface, Anthropic adapter, mock provider, validated generators, generation log, asset cache.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
+    "@cardinal/core": "workspace:*",
+    "zod": "^4.5.4"
+  }
+}
