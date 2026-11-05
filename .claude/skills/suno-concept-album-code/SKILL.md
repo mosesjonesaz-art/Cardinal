@@ -286,13 +286,18 @@ Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
 
 ## His keywords
 
-- **"Upgrade"** means: fix his standing complaints and nothing else.
-  1. Rhyme every line with a deliberate scheme, the same in matching sections.
-  2. Cut every line to 8 syllables or fewer (or his limit), with choruses leaner than verses.
-  3. Replace mundane objects with charged images.
+- **"Upgrade"** means a light touch on a song he already likes. A heavy rewrite of 13 songs made them "a
+  lot worse than the originals", so on an existing song:
+  1. Keep his wording. Change a line only if it rhymes with nothing; then give it a slant rhyme (or
+     perfect) by changing as few words as possible.
+  2. Trim only overcrowded lines: about 10 or more syllables, or clearly longer than the lines around them.
+     Cut filler words; don't force every line to 8.
+  3. Replace only words he marks "replace", plus obvious utility objects from `MUNDANE_WORDS`.
+  4. Leave choruses and hook lines alone unless he asks. Leave lines that already work alone, even if the
+     checker flags them.
 
-  Keep the concept, structure, hook lines, imagery that already works, and the style prompt. Change only
-  what those three fixes need.
+  The strict defaults above (every line to 8 syllables, perfect rhymes first) are for new songs, not for
+  upgrading his existing ones.
 - **"Boost"** means: make the song more awesome. Everything "upgrade" does, plus freedom to rewrite lines
   for impact.
   1. A sharper, more singable hook.
@@ -317,9 +322,16 @@ When he names songs to improve:
    twice with the same lyrics (that's why his albums always have an even number of songs). Read one take
    unless the two differ.
 2. Do what his keyword asks ("upgrade", "boost", or both; with no keyword, upgrade). Check with
-   `python lyrics.py analyze - --suno --max 8`.
+   `python lyrics.py analyze - --suno` and fix only what the keyword covers.
 3. Give each song back in the chat, every line written out and ready to paste. Say in a few bullets what
    changed. Don't save anything, and generate in Suno only when he asks.
+4. **Regenerate an existing song as a cover of its original**, not a fresh generation: `audio-covers-create`
+   with the original clip's id, the new lyrics, its style prompt, `model: "v6"`, and
+   `controls: {"audio_influence": 0.8}`. A fresh generation writes a brand-new melody even when the
+   chorus words are identical; a cover keeps the melody he liked. Raise `audio_influence` toward 0.9 if
+   it drifts. Keep changed lines close to the original's syllable count so they fit the old melody: a
+   line one syllable short or long at the start ("let the last page" vs "the last page") is enough to
+   sound rushed.
 
 ## Revisions
 
