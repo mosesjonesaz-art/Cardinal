@@ -5,6 +5,9 @@ He could silence the gate's creaking hinge in a minute, but it's the sound it ma
 so he lets it keep singing. Rain runs through the whole song: it wakes him, drinks the glass he sets out
 for her, and in the bridge it's the reason he won't fix the hinge yet.
 
+Takes (Suno v6): https://suno.com/song/aca1802d-35a3-4378-8e55-e446ce4b1d25 ·
+https://suno.com/song/279ddc9d-2f3c-46a1-b3d4-4f70cc0b8a98
+
 **Style**
 ```
 Melancholic gothic pop-rock with a theatrical vintage-rock character, 130 BPM in 4/4, verses driven by a steady clipped drum groove and descending bass, chorus drops into a broad half-time sway with spacious snare hits and sustained guitar chords. Low chest-register male vocals, intimate and wistful in the verses, opening into a memorable yearning chorus. Add restrained organ color, warm overdriven guitar, subtle backing harmonies, and a gradual cinematic build; polished mix with clear vocal focus and a slightly grainy analog warmth.
