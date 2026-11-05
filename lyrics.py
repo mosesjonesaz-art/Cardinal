@@ -9,9 +9,11 @@ Usage:
   python lyrics.py analyze song.txt            # per-line syllables + rhyme scheme
   python lyrics.py analyze -                   # read lyrics from stdin
   python lyrics.py analyze song.txt --stress   # also show stress pattern per line
-  python lyrics.py analyze song.txt --target 8,8,8,8   # flag lines off target
-  python lyrics.py line "I've been walking down this road"
+  python lyrics.py analyze song.txt --target 8,8,8,8 --scheme ABAB
+                                               # flag lines that miss, with suggested fixes
+  python lyrics.py line "I've been walking down this road" --target 8 --rhyme cold
   python lyrics.py rhymes fire                 # perfect + slant rhymes, common first
+  python lyrics.py rhymes fire --syllables 2   # only 2-syllable rhymes
   python lyrics.py rhymes fire --all           # include rare words / names
   python lyrics.py compare fire higher         # how well two words rhyme
 """
@@ -54,6 +56,14 @@ def phones(word: str) -> tuple[str, ...]:
     if not found and w.endswith("in"):
         found = pronouncing.phones_for_word(w + "g")  # runnin' -> running
     return tuple(found)
+
+
+def syllable_options(word: str) -> set[int]:
+    """Every syllable count the word can be sung with (fire = 1 or 2)."""
+    p = phones(word)
+    if p:
+        return {pronouncing.syllable_count(x) for x in p}
+    return {syllable_count(word)[0]}
 
 
 def syllable_count(word: str) -> tuple[int, bool]:
@@ -152,17 +162,26 @@ def rhyme_quality(a: str, b: str) -> tuple[str, int]:
 
 
 def _perfect_pattern(rhyming_part: str) -> str:
-    """Regex matching any pronunciation ending in this rhyming part (any stress)."""
-    parts = [p + (r"\d" if VOWEL_RE.match(p) else "") for p in _strip_stress(rhyming_part).split()]
+    """Regex for pronunciations ending in this rhyming part.
+
+    The first vowel must be stressed (primary or secondary), so road matches
+    explode and railroad but not followed. Later vowels may have any stress.
+    """
+    parts, first = [], True
+    for p in _strip_stress(rhyming_part).split():
+        if VOWEL_RE.match(p):
+            p += "[12]" if first else r"\d"
+            first = False
+        parts.append(p)
     return r"(?:^| )" + " ".join(parts) + "$"
 
 
-def find_rhymes(word: str, include_rare: bool = False, limit: int = 40) -> dict[str, list[str]]:
-    """Perfect and slant rhymes for a word, most common words first."""
-    word = word.lower()
+@lru_cache(maxsize=None)
+def _rhyme_pool(word: str, include_rare: bool) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """All perfect and slant rhymes for a word, most common first (cached)."""
     p = phones(word)
     if not p:
-        return {"perfect": [], "slant": []}
+        return (), ()
     perfect: set[str] = set()
     slant: set[str] = set()
     for pron in p:
@@ -180,13 +199,83 @@ def find_rhymes(word: str, include_rare: bool = False, limit: int = 40) -> dict[
     perfect.discard(word)
     slant -= perfect | {word}
 
-    def rank(words: set[str]) -> list[str]:
-        words = {w for w in words if "'" not in w and "." not in w}
+    def rank(words: set[str]) -> tuple[str, ...]:
+        # Drop hyphenated compounds (on-line) and single letters except "i".
+        words = {w for w in words if not re.search(r"['.\-]", w) and (len(w) > 1 or w == "i")}
         if zipf_frequency and not include_rare:
             words = {w for w in words if zipf(w) >= 2.5}
-        return sorted(words, key=lambda w: (-zipf(w), w))[:limit]
+        return tuple(sorted(words, key=lambda w: (-zipf(w), w)))
 
-    return {"perfect": rank(perfect), "slant": rank(slant)}
+    return rank(perfect), rank(slant)
+
+
+def find_rhymes(word: str, include_rare: bool = False, limit: int = 40,
+                syllables_: int | None = None) -> dict[str, list[str]]:
+    """Perfect and slant rhymes for a word, most common words first.
+
+    If `syllables_` is given, only words that can be sung with exactly that
+    many syllables (any pronunciation counts, so fire fits 1 or 2).
+    """
+    perfect, slant = _rhyme_pool(word.lower(), include_rare)
+
+    def pick(words: tuple[str, ...]) -> list[str]:
+        if syllables_ is not None:
+            words = tuple(w for w in words if syllables_ in syllable_options(w))
+        return list(words[:limit])
+
+    return {"perfect": pick(perfect), "slant": pick(slant)}
+
+
+def suggest_endings(anchor: str, syllables_: int, exclude: set[str], limit: int = 8) -> str:
+    """One-line list of end words that rhyme with `anchor` and have `syllables_` syllables."""
+    res = find_rhymes(anchor, limit=limit + len(exclude), syllables_=syllables_)
+    perfect = [w for w in res["perfect"] if w not in exclude][:limit]
+    slant = [w for w in res["slant"] if w not in exclude][:max(0, limit - len(perfect))]
+    parts = []
+    if perfect:
+        parts.append(", ".join(perfect))
+    if slant:
+        parts.append("slant: " + ", ".join(slant))
+    return " | ".join(parts)
+
+
+def fix_hint(words: list[str], count: int, want: int | None, rhyme_with: str | None) -> str:
+    """Suggest how to fix a line that misses its syllable target and/or rhyme.
+
+    Lists replacement end words that rhyme (with `rhyme_with`, or else the
+    line's own end word) and, where possible, have the syllable count that
+    fixes the line on their own.
+    """
+    if not words:
+        return ""
+    end = words[-1]
+    end_syl = syllable_count(end)[0]
+    anchor = rhyme_with or end
+    diff = 0 if want is None else count - want
+    count_fix = ""
+    if diff > 0:
+        count_fix = f"cut {diff} syllable{'s' * (diff > 1)}"
+    elif diff < 0:
+        count_fix = f"add {-diff} syllable{'s' * (-diff > 1)}"
+
+    need = end_syl - diff  # end-word length that fixes the count by itself
+    if 1 <= need <= 3:
+        n, fixes_count = need, True
+    elif rhyme_with:
+        n, fixes_count = end_syl, False  # fix the rhyme now, the count elsewhere
+    else:
+        return f"fix: {count_fix} earlier in the line"
+    if not phones(anchor):
+        return f"fix: {count_fix or 'rework the line'} ('{anchor}' isn't in the dictionary)"
+
+    options = suggest_endings(anchor, n, exclude={end, anchor})
+    swap = (f"end on a {n}-syllable rhyme for '{anchor}': {options}" if options
+            else f"no common {n}-syllable rhymes for '{anchor}'")
+    if not count_fix:
+        return f"fix: {swap}"
+    if fixes_count:
+        return f"fix: {count_fix}, or {swap}" if options else f"fix: {count_fix} ({swap})"
+    return f"fix: {count_fix} earlier in the line, and {swap}"
 
 
 # ------------------------------------------------------------- analysis ----
@@ -250,7 +339,14 @@ def rhyme_scheme(lines: list[list[str]]) -> list[tuple[str, str]]:
     return out
 
 
-def analyze_text(text: str, show_stress: bool = False, target: list[int] | None = None) -> str:
+def analyze_text(text: str, show_stress: bool = False, target: list[int] | None = None,
+                 scheme: str | None = None) -> str:
+    """Report syllables and rhyme groups per line.
+
+    `target` (syllables per line) and `scheme` (e.g. "ABAB"; X = no rhyme
+    needed) are cycled over the lines of each stanza. Lines that miss either
+    get a flag plus a "fix:" line with end words that would fix them.
+    """
     stanzas: list[list[str]] = [[]]
     for raw in text.splitlines():
         line = raw.rstrip()
@@ -262,28 +358,44 @@ def analyze_text(text: str, show_stress: bool = False, target: list[int] | None 
 
     out: list[str] = []
     total_estimated: set[str] = set()
+    problems = 0
     for stanza in stanzas:
         if not stanza:
             continue
         lyric_lines = [l for l in stanza if not SECTION_RE.match(l)]
         analyses = [analyze_line(l) for l in lyric_lines]
-        scheme = iter(rhyme_scheme([a["words"] for a in analyses]))
+        detected = iter(rhyme_scheme([a["words"] for a in analyses]))
         it = iter(analyses)
         idx = 0
+        first_of_letter: dict[str, list[str]] = {}
         for line in stanza:
             if SECTION_RE.match(line):
                 out.append(line.strip())
                 continue
             a = next(it)
-            letter, note = next(scheme)
+            letter, note = next(detected)
             mark = "~" if a["estimated"] else " "
-            flag = ""
-            if target:
-                want = target[idx % len(target)]
-                if a["syllables"] != want:
-                    flag = f"  <-- {a['syllables']} vs target {want}"
+            flags = []
+            want = target[idx % len(target)] if target else None
+            if want is not None and a["syllables"] != want:
+                flags.append(f"{a['syllables']} vs target {want}")
+            rhyme_with = None  # word suggestions should rhyme with
+            if scheme and a["words"]:
+                intended = scheme[idx % len(scheme)].upper()
+                if intended not in "X-":
+                    earlier = first_of_letter.get(intended)
+                    if earlier is None:
+                        first_of_letter[intended] = a["words"]
+                    else:
+                        rhyme_with = earlier[-1]
+                        if line_rhyme(a["words"], earlier)[0] not in ("perfect", "slant", "identical"):
+                            flags.append(f"should rhyme with '{rhyme_with}' ({intended})")
             out.append(f"{a['syllables']:>3}{mark} {letter:<2} {a['text'].strip()}"
-                       + (f"   ({note})" if note else "") + flag)
+                       + (f"   ({note})" if note else "")
+                       + (f"  <-- {'; '.join(flags)}" if flags else ""))
+            if flags:
+                problems += 1
+                out.append("          " + fix_hint(a["words"], a["syllables"], want, rhyme_with))
             if show_stress:
                 out.append(f"          stress: {a['stress']}")
             total_estimated.update(a["estimated"])
@@ -294,6 +406,8 @@ def analyze_text(text: str, show_stress: bool = False, target: list[int] | None 
                "(UPPER perfect, lower slant), ~ = contains estimated words")
     if total_estimated:
         out.append("Estimated (not in CMU dictionary): " + ", ".join(sorted(total_estimated)))
+    if target or scheme:
+        out.append(f"{problems} line(s) need work." if problems else "All lines hit the targets.")
     return "\n".join(out).rstrip()
 
 
@@ -307,14 +421,18 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("file")
     a.add_argument("--stress", action="store_true", help="show stress pattern per line")
     a.add_argument("--target", help="comma-separated syllable targets, cycled per stanza line (e.g. 8,8,8,8)")
+    a.add_argument("--scheme", help="rhyme scheme to check, cycled per stanza (e.g. ABAB, AABB; X = no rhyme)")
 
     l = sub.add_parser("line", help="syllables and stress for a single line")
     l.add_argument("text", nargs="+")
+    l.add_argument("--target", type=int, help="syllable target; suggests end words that hit it")
+    l.add_argument("--rhyme", help="word the line should rhyme with")
 
     r = sub.add_parser("rhymes", help="perfect and slant rhymes for a word")
     r.add_argument("word")
     r.add_argument("--all", action="store_true", help="include rare words and names")
     r.add_argument("--limit", type=int, default=40)
+    r.add_argument("--syllables", type=int, help="only rhymes with this many syllables")
 
     c = sub.add_parser("compare", help="rate how well words rhyme with the first")
     c.add_argument("words", nargs="+")
@@ -324,7 +442,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "analyze":
         text = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
         target = [int(x) for x in args.target.split(",")] if args.target else None
-        print(analyze_text(text, args.stress, target))
+        print(analyze_text(text, args.stress, target, args.scheme))
 
     elif args.cmd == "line":
         res = analyze_line(" ".join(args.text))
@@ -333,9 +451,19 @@ def main(argv: list[str] | None = None) -> int:
         for w in res["words"]:
             n, known = syllable_count(w)
             print(f"  {w:<15} {n}{'' if known else ' (estimated)'}  {stress_pattern(w)}")
+        label = None
+        if args.rhyme and res["words"] and tokenize(args.rhyme):
+            label, depth, extra = line_rhyme(res["words"], tokenize(args.rhyme))
+            print(f"rhyme with '{args.rhyme}': {label}" + (f" ({extra})" if extra else ""))
+        off_target = args.target is not None and res["syllables"] != args.target
+        bad_rhyme = label is not None and label not in ("perfect", "slant", "identical")
+        if off_target or bad_rhyme:
+            rhyme_with = tokenize(args.rhyme)[-1] if label is not None else None
+            print(fix_hint(res["words"], res["syllables"], args.target, rhyme_with))
 
     elif args.cmd == "rhymes":
-        res = find_rhymes(args.word, include_rare=args.all, limit=args.limit)
+        res = find_rhymes(args.word, include_rare=args.all, limit=args.limit,
+                          syllables_=args.syllables)
         if not phones(args.word):
             print(f"'{args.word}' is not in the CMU dictionary; can't look up rhymes.")
             return 1

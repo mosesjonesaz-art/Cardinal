@@ -13,10 +13,23 @@ pip install -r requirements.txt
 ```bash
 python lyrics.py analyze songs/my-song.txt           # syllables + rhyme scheme per line
 python lyrics.py analyze songs/my-song.txt --stress  # also show stressed syllables
-python lyrics.py analyze songs/my-song.txt --target 8,8,7,7   # flag lines that miss a syllable target
-python lyrics.py line "I've been runnin' through the fire"
+python lyrics.py analyze songs/my-song.txt --target 8,8,7,7 --scheme AABB
+                                                     # flag lines that miss, with suggested fixes
+python lyrics.py line "I've been walking down this road" --target 8 --rhyme cold
 python lyrics.py rhymes fire                         # perfect + slant rhymes, common words first
+python lyrics.py rhymes fire --syllables 1           # only rhymes that fit in 1 syllable
 python lyrics.py compare broken token open hoping    # how well words rhyme
+```
+
+When you give a syllable target (`--target`) or rhyme scheme (`--scheme`, `X` = no rhyme needed), each
+line that misses gets a `fix:` line with replacement end words. Where possible, the suggested words rhyme
+and also have the syllable count that fixes the line on their own:
+
+```
+  9  A  Every night it's climbing higher   (perfect, 2-syllable)  <-- 9 vs target 8
+          fix: cut 1 syllable, or end on a 1-syllable rhyme for 'fire': wire, hire, dire, ...
+  8  C  Couldn't find the words to tell you  <-- 8 vs target 7; should rhyme with 'away' (B)
+          fix: cut 1 syllable earlier in the line, and end on a 1-syllable rhyme for 'away': they, way, day, ...
 ```
 
 Example `analyze` output:
