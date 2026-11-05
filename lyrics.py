@@ -66,9 +66,12 @@ im i'm ive i've ill i'll id i'd youre you're it's dont cant wont aint ain't
 
 # Tags the Suno skill allows. A trailing number is fine: [Verse 2].
 SUNO_TAGS = {"intro", "verse", "pre-chorus", "chorus", "bridge", "breakdown", "spoken word",
-             "whispered", "break", "final chorus", "outro", "male", "female"}
+             "whispered", "break", "final chorus", "outro", "male", "female", "male & female"}
+VOICE_TAGS = {"male", "female", "male & female"}
+# Shorthand Suno would sing literally instead of repeating a section.
+SHORTHAND_RE = re.compile(r"\(\s*same\s*\)|\bx\s*\d\b|\brepeat\b|^\s*\.\.\.\s*$|…", re.I)
 # Tags that mark a voice or delivery change inside a section, not a new section.
-INLINE_TAGS = {"male", "female", "whispered", "spoken word"}
+INLINE_TAGS = {"male", "female", "male & female", "whispered", "spoken word"}
 # A line ending on one of these usually splits a clause; a line break is a breath.
 DANGLING_ENDS = {"a", "an", "the", "to", "of", "and", "or", "but", "my", "your", "our",
                  "their", "its", "than", "if", "because"}
@@ -625,6 +628,25 @@ def suno_checks(sections: list[dict]) -> list[str]:
         if len(set(shapes.values())) > 1:
             issues.append("matching sections use different rhyme schemes: "
                           + ", ".join(f"[{t}] {sh}" for t, sh in shapes.items()))
+    # Duets: once any voice tag appears, every lead line needs one directly above it.
+    if any(TAG_RE.match(l) and _tag_base(TAG_RE.match(l).group(1)) in VOICE_TAGS
+           for s in sections for l in s["lines"]):
+        for s in sections:
+            prev = None
+            for line, lead in zip(s["lines"], s["is_lead"]):
+                m = TAG_RE.match(line)
+                if lead and not (prev and _tag_base(prev) in VOICE_TAGS):
+                    issues.append(f"[{s['tag'] or 'untagged'}] \"{line.strip()}\": duet line without "
+                                  "[Male] or [Female] above it")
+                prev = m.group(1) if m else None
+    for s in sections:
+        for line in s["lines"]:
+            if SHORTHAND_RE.search(line):
+                issues.append(f"[{s['tag'] or 'untagged'}] \"{line.strip()}\": write the lines out, "
+                              "Suno sings shorthand literally")
+        if s["tag"] and SHORTHAND_RE.search(s["tag"]):
+            issues.append(f"[{s['tag']}]: write the section out instead of a repeat tag")
+
     choruses = ["\n".join(l.strip() for l in s["lines"]) for s in by_base.get("chorus", [])]
     if len(set(choruses)) > 1:
         issues.append("choruses differ; repeat the chorus exactly and vary only [Final Chorus]")

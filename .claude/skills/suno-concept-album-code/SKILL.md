@@ -132,6 +132,8 @@ What the tools check, and what's left to you:
 | Verses 4-6 lines, pre-choruses 2-4 | yes | |
 | Choruses repeat exactly | yes, except [Final Chorus] | |
 | Standard tags only, no descriptions in tags | yes | |
+| Duets: [Male]/[Female] above every line | yes | who sings what |
+| Every line written out, no "(same)" shorthand | flags "(same)", "x2", "repeat" | |
 | A line break is a breath | flags lines ending on "the", "to", "and"... | clauses that split elsewhere |
 | No sound-effect words | flags repeated words ("ding ding") | other sound effects |
 | No proper names or media references | flags capitalized words mid-line | references in lowercase |
@@ -201,6 +203,9 @@ genres.
 
 ## Suno formatting
 
+- **Write out every line, ready to paste into Suno.** Every section in full, every time it's sung,
+  including repeated choruses. Never shorthand like "(same)", "[Chorus x2]", "repeat chorus" or "...":
+  Suno sings exactly what's in the lyrics box. This applies to lyrics shown in the chat too.
 - Section tags stay short and standard: [Intro] [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Bridge]
   [Breakdown] [Spoken Word] [Whispered] [Break] [Final Chorus] [Outro]. Never put descriptions inside
   tags; Suno reads them aloud or ignores them. Delivery and production notes go in the style prompt.
@@ -209,8 +214,11 @@ genres.
 - A line break is a breath. End a line only where a pause belongs, and never split a clause across lines
   ("too tired to be able / to remember" produced a long pause after "able").
 - No sound-effect words like "ding ding."
-- A male/female duet works with [Male] and [Female] on their own lines. Two characters of the same voice
-  type work better as one singer shifting delivery, with the other character's replies in parentheses.
+- **Duets: label every line.** In a male/female duet, put [Male] or [Female] on its own line above every
+  single lyric line, even when the same singer has several lines in a row. Use [Male & Female] above a
+  line they sing together. `lyrics.py --suno` flags any duet line without a label. Two characters of the
+  same voice type work better as one singer shifting delivery, with the other character's replies in
+  parentheses.
 
 ## Style prompts
 

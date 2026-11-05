@@ -58,6 +58,8 @@ in `songs/<album-slug>/album.md`, singles in `songs/singles/`.
 - **Section rules:** verses have 4-6 lines and pre-choruses 2-4. Choruses repeat exactly; only
   `[Final Chorus]` may change. The chorus must be leaner than the verses.
 - **Tags:** only standard Suno tags, with no descriptions inside them.
+- **Ready to paste:** every line written out, with no "(same)", "x2" or "repeat" shorthand. In duets,
+  `[Male]`, `[Female]` or `[Male & Female]` must sit above every line.
 - **Line rules:** no line ending on "the", "to", "and" and similar (a line break is a breath), no repeated
   sound-effect words, no proper names.
 - **Genre drift:** words that pulled songs out of their genre. Edit `DRIFT_WORDS` in `lyrics.py` to add more.
