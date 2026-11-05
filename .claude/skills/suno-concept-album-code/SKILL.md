@@ -339,10 +339,15 @@ When he names songs to improve:
 3. Give each song back in the chat, every line written out and ready to paste. Say in a few bullets what
    changed. Don't save anything, and generate in Suno only when he asks.
 4. **Regenerate an existing song as a cover of its original**, not a fresh generation: `audio-covers-create`
-   with the original clip's id, the new lyrics, its style prompt, `model: "v6"`, and
-   `controls: {"audio_influence": 0.8}`. A fresh generation writes a brand-new melody even when the
-   chorus words are identical; a cover keeps the melody he liked. Raise `audio_influence` toward 0.9 if
-   it drifts. Keep changed lines close to the original's syllable count so they fit the old melody: a
+   with the original clip's id, the new lyrics, its style prompt, and `model: "v6"`. Set
+   `controls.audio_influence` to:
+   - **0.5 when any line's syllable count changed.** This is what worked: both 0.5 covers of "Stay in the
+     Story" were "great". Suno keeps the original's feel and re-phrases the changed lines.
+   - 0.8 only when every changed line fits the original exactly (`fit` passes on every line). At 0.8,
+     shortened lines were forced onto the old notes and sounded rushed.
+
+   A fresh generation writes a brand-new melody even when the chorus words are identical. On "Stay in the
+   Story" the fresh generation was "a miss" next to the covers, so don't generate fresh unless he asks. Keep changed lines close to the original's syllable count so they fit the old melody: a
    line one syllable short or long at the start ("let the last page" vs "the last page") is enough to
    sound rushed.
 
@@ -355,8 +360,9 @@ and keeping its melody pull against each other. The options, best first:
 
 1. **Keep the count, lighten the sound.** Crowding often comes from consonant clusters and stressed words on
    quick notes, not from the count itself. Swap in words with the same count and open vowels.
-2. **Let the melody move.** Cover with a lower `audio_influence` (about 0.5-0.6). Suno keeps the feel but
-   re-phrases lines to fit the new counts. Generate, and let him pick the take.
+2. **Let the melody move.** Cover at `audio_influence` 0.5 (his "great" results). Suno keeps the feel and
+   re-phrases lines to fit the new counts. A long line answered by a short one works: "Stay in the story
+   for a little while / don't turn the last page yet" (10, then 6).
 3. **New melody.** A fresh generation writes a melody for the new lyrics. It loses the old one entirely.
 4. **Fix one section.** Suno's editor on suno.com may let him regenerate only part of a song with new
    lyrics. The connector can't do that, so suggest he try it there.
