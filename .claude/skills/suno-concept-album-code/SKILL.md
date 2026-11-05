@@ -1,0 +1,261 @@
+---
+name: "suno-concept-album-code"
+description: "Use when writing or generating Suno songs or a Suno concept album in the Cardinal repo with Claude Code: turning ideas into a tracklist, writing lyrics, writing style prompts with BPM, checking them with lyrics.py, saving them as album files, and generating in Suno."
+---
+
+# Suno concept albums (Claude Code + lyric tools)
+
+This is the Claude Code version of the `suno-concept-album` skill. The taste rules are the same, word for
+word. What's new: songs live as files in this repo, and every draft is checked with `lyrics.py` before
+Moses sees it, so syllable counts, rhymes and the mechanical rules are verified, not guessed.
+
+Moses makes concept albums and single songs in Suno. The job: turn his notes (or a concept you pick when he
+asks) into a tracklist, then write a style prompt and lyrics for every track, and generate them when he
+asks. These rules come from his feedback. Follow them on the first draft so he never has to repeat them.
+
+## Setup (once per session)
+
+```bash
+./setup.sh
+```
+
+## Every song, every time
+
+These apply to every song, single or album, unless he says otherwise for that song:
+
+- **Figurative, not on the nose.** Symbol, metaphor and image carry the meaning. Never state the feeling or
+  the plot outright; let a concrete picture do it.
+- **Catchy beats clever.** Aim for a hook he can hum after one listen: short repeated phrases, the title
+  inside the chorus, a melody-friendly shape.
+- **Always a rhyme scheme.** Give every section a deliberate scheme (ABAB, XAXA, and so on) and hold the
+  same scheme across matching sections, so both verses match and both pre-choruses match. Slant rhymes are
+  fine; rhyming a word with itself is not.
+- **Internal rhymes sometimes.** Now and then put a rhyme inside a line too, a word mid-line that chimes
+  with the line's end or the next line's middle. Use it for lift, not on every line.
+- **Lean choruses.** Minimize words and syllables in the chorus: the fewest that still carry the hook and
+  the image. Verses can carry more detail than the chorus.
+- **Generate in v6.** When generating with the Suno tools, pass model "v6" unless he names a different
+  model.
+
+## Files
+
+One album file per album, `songs/<album-slug>/album.md`. Singles go in `songs/singles/<song-slug>.md`
+with the same track-section format (no tracklist or threads tables). The album file follows the original
+deliverable, in this order:
+
+1. **Concept**: a short paragraph, plus the recurring personas or attitudes if the album has them.
+2. **Tracklist table**: #, title, persona/attitude, BPM, one-line vibe.
+3. **Recurring threads table**: every callback between songs and where it travels.
+4. **Suno tips**: the formatting rules below, kept short.
+5. **One section per track**: heading "NN · Title", a 1-3 sentence note (what the song is, which callbacks
+   it carries), then **Style** in its own code block and **Lyrics** in its own code block so each copies
+   in one tap.
+
+~~~markdown
+# Album Title
+
+## Concept
+...
+
+## Tracklist
+| # | Title | Persona | BPM | Vibe |
+|---|-------|---------|-----|------|
+| 1 | First Song | the ghost | 70 | swooning, eerie |
+
+## Recurring threads
+| Thread | Where it travels |
+|--------|------------------|
+| chalk outline | 01 hook → 04 bridge (flipped) |
+
+## Suno tips
+- ...
+
+## 01 · First Song
+One to three sentences: what the song is, which callbacks it carries.
+
+**Style**
+```
+(style prompt)
+```
+
+**Lyrics**
+```
+[Verse 1]
+...
+```
+~~~
+
+`lyrics.py album` reads this layout, so keep the headings ("## 01 · Title") and the **Style** / **Lyrics**
+labels exactly like this. Keep track numbers, the tracklist, and the threads table in sync whenever a
+track is added, moved, or rewritten; `lyrics.py album` flags tracklist rows whose title or BPM don't match.
+
+If he asks for a Claude doc as well, publish the finished album file's content to one (the docs tools,
+when available), but keep the repo file as the version the tools check.
+
+## Workflow
+
+1. Draft the tracklist and threads first, then each track.
+2. Write each track's lyrics and style prompt into the album file.
+3. Check the whole album: `python lyrics.py album songs/<album>/album.md`. Then look at each track in
+   full: `python lyrics.py album songs/<album>/album.md --track N`. This shows syllables and the detected
+   rhyme scheme per line, internal rhymes, a summary for each section, the Suno checks, and the style check.
+4. Fix what it flags, then check again until it's clean. For lines you want tighter (choruses), or when you
+   chose a scheme, put the section in a scratch file and run
+   `python lyrics.py analyze <file> --scheme XAXA --target 6,6,6,6`. Lines that miss get `fix:`
+   suggestions (end words that rhyme and fix the count) and `swap:` suggestions (synonyms with the right
+   syllable count).
+5. To find words: `python lyrics.py rhymes <word> [--syllables N]` for perfect and slant rhymes;
+   `python lyrics.py words <word> [--syllables N] [--rhyme X] [--related]` for synonyms;
+   `python lyrics.py compare <word> <candidates...>` to test a rhyme. Suggestions are raw material: pick
+   ones that fit the image and the genre lane, and rewrite the line when one swapped word isn't enough.
+6. The tools check counts, sounds and mechanical rules. They can't judge taste. Read every line against
+   the writing standard below before showing it to him.
+7. Commit and push the album file after each round of changes, so nothing is lost when the session ends.
+
+What the tools check, and what's left to you:
+
+| Rule | Checked by `lyrics.py` | Your judgment |
+|------|------------------------|---------------|
+| Rhyme scheme held across matching sections | yes: section schemes compared | which scheme fits |
+| No rhyming a word with itself | yes | |
+| Internal rhymes sometimes | counts them per line | where they add lift |
+| Lean chorus | flags a chorus as long as the verses; shows syllables per section | the fewest words that carry the hook |
+| Verses 4-6 lines, pre-choruses 2-4 | yes | |
+| Choruses repeat exactly | yes, except [Final Chorus] | |
+| Standard tags only, no descriptions in tags | yes | |
+| A line break is a breath | flags lines ending on "the", "to", "and"... | clauses that split elsewhere |
+| No sound-effect words | flags repeated words ("ding ding") | other sound effects |
+| No proper names or media references | flags capitalized words mid-line | references in lowercase |
+| Genre drift words | flags words from a list (edit `DRIFT_WORDS` in `lyrics.py` when a track drifts) | the lane as a whole |
+| Style prompt: 200-350 chars, BPM, vocals, no artist names | yes | the fusion, the arc, the twist |
+| BPM spread across the album | flags tracks within 5 BPM | |
+| Figurative, angsty-not-cheesy, catchy | no | all of it |
+
+## Album shape
+
+- Loosely cohesive, not a book. Mix plot-beat songs with pure-attitude songs (emotional expressions,
+  declarations). Story beats arrive through metaphor, never narration.
+- Heavy symbolism with overlapping callbacks. Each callback is a single line, easy to miss on first listen.
+  The strongest ones flip an earlier hook: "you're all dead men walking" becomes "get up, dead man, and
+  walk"; "count the heads, there's only one" becomes "for the first time... there's two."
+- Adjacent songs can hand off: an outro of footsteps on the stairs, then the next song opens with who came.
+- Spread the BPMs so nothing blurs together. Every track gets a real hook, quiet ones included. Nothing too
+  chill or forgettable.
+- If the album needs a consistent singer, make track 01 a strong vocal anchor so he can create a Suno Voice
+  from it.
+
+## Writing standard: angsty, not cheesy
+
+Saying exactly what you mean hurts these songs. Show the feeling through concrete images that are a little
+dangerous or a little beautiful, and take the song completely seriously. A blunt line is allowed only where
+it hits hardest, usually the hook.
+
+Cut on sight:
+
+- The mundane, literal thing: "Wake up. Clock in. Do the right things." (reads like a kid wrote it)
+- Cutesy-clever lines: "I'm a lion doing taxes in a very nice cage"
+- Metaphors that announce the concept: "two moths in a jar"
+- Spelling out the meaning: "here comes the truth like a cannonball," "let's avoid this," "unconditional,
+  unconditional"
+- Motivational-poster lines: "if it knocks me down, I'll learn it," "when you expect nothing, nothing can
+  let you down"
+- Songs that explain the album's own concept: "there's six of me, did they warn you, dear?"
+- Parent figures as the emotional payoff, unless he asks for one
+
+Aim for lines like:
+
+- "Applause for a statue that learned how to breathe, / hands folded clean over teeth underneath."
+- "I woke up in my own chalk outline"
+- "you picked up the chalk where I'd fallen, / and drew yourself next to me, that's all"
+- "Hallelujah, I hate it here"
+
+Be concise: verses of 4-6 short lines, pre-choruses of 2-4, choruses that repeat exactly (vary only the
+final one) and stay lean. No yapping.
+
+Dark imagery (guns, killers, crash-outs, villains) is emo metaphor in these albums. Write it with
+conviction and without disclaimers, and keep it clearly metaphorical. With religious imagery, mock
+shortcuts and hypocrisy, not faith.
+
+No proper names or media references in lyrics or style prompts. Use his references as inspiration only.
+
+## Genre discipline
+
+Lyric vocabulary steers Suno's genre as much as the style prompt does. Keep words inside the album's lane.
+Hammer, iron, forge, and blood pushed an emo song toward metal; country-coded words gave a rock album a
+Southern accent. Style prompts work the same way: marching snare, galloping drums, and "unstoppable" read
+as metal. When a track drifts, rebuild its style prompt from the core descriptors of the album's anchor
+track, and add the words that caused the drift to `DRIFT_WORDS` in `lyrics.py` so the check catches them
+next time.
+
+When picking synonyms with `lyrics.py words`, check them against the lane too: the thesaurus doesn't know
+genres.
+
+## Suno formatting
+
+- Section tags stay short and standard: [Intro] [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Bridge]
+  [Breakdown] [Spoken Word] [Whispered] [Break] [Final Chorus] [Outro]. Never put descriptions inside
+  tags; Suno reads them aloud or ignores them. Delivery and production notes go in the style prompt.
+- Words in parentheses get sung as backing vocals. Use them only for echoes, call-and-response, or gang
+  shouts. (`lyrics.py` leaves them out of the line's syllable count and shows them as `+N bg`.)
+- A line break is a breath. End a line only where a pause belongs, and never split a clause across lines
+  ("too tired to be able / to remember" produced a long pause after "able").
+- No sound-effect words like "ding ding."
+- A male/female duet works with [Male] and [Female] on their own lines. Two characters of the same voice
+  type work better as one singer shifting delivery, with the other character's replies in parentheses.
+
+## Style prompts
+
+The pattern of his favorites: genre plus one distinctive fusion or feel, BPM (and time signature if
+unusual), a specific vocal description, 3-5 concrete instruments with what they do, the arrangement arc
+(what enters when), and a mood with a twist. Roughly 200-350 characters, no artist names. Match his stated
+vocal range when he gives one. When he supplies his own style prompt, use it word for word unless he allows
+changes. Check each one with `python lyrics.py style "<prompt>"` (the album check does this for every
+track).
+
+Reference prompts he rated highest:
+
+```
+Emo power ballad with a 1950s doo-wop slow-dance feel, 6/8 time, 70 BPM, tender swooning raspy male tenor vocals, chiming arpeggiated guitars, warm organ, brushed drums building to full band, glam rock backing harmonies, dreamy and romantic with a faint eerie edge
+```
+
+```
+2000s emo-punk duet, swing-punk with a cabaret bounce, 138 BPM, male and female call-and-response vocals, raspy male tenor and bright sassy female vocal, palm-muted guitars exploding into a big chorus, walking punk bassline, handclaps, playful and theatrical with nervous tension
+```
+
+```
+Ethereal emo slowcore, dreamy shoegaze guitars drenched in reverb, 64 BPM, floating whispery male vocals, soft piano, distant music box, slow swelling drums, whispered eerie horror-tinged bridge, soft spoken final line, weightless and haunting
+```
+
+```
+Emotional emo piano ballad building to a massive rock crescendo, 76 BPM, opens with solo piano and fragile raspy male vocals, strings enter on the second verse, full band in the bridge with raw cracking screams, ends back on solo piano, desperate and prayerful
+```
+
+## Generating in Suno
+
+Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
+
+- Custom mode: pass the track's **Lyrics** block as `lyrics`, its **Style** block as `style`, the track
+  title as `title`, and `model: "v6"` unless he names another model. Don't send `description` with lyrics.
+- Use model "v6" for every generation unless he names another model. If v6 is refused, check
+  `account-usage` for the allowed models and tell him; don't silently switch.
+- Each generation makes two takes; give him links to both. Pass every returned clip id to `audio-wait` in
+  one call.
+- If Suno says songs are starting too quickly, wait the seconds it asks and retry that song.
+- Generating spends his credits: generate only the tracks he asks for.
+- Under the track's section in the album file, add a `Takes:` line with both links, and commit it.
+
+## Suno Voice tips (check the current Suno UI if anything looks different)
+
+- Create a Voice from the song whose singer he likes. Put only vocal descriptors in its Styles field (no BPM
+  or instruments), and delete the source song's lyrics from it.
+- For each new track, paste that track's style prompt over whatever the Voice auto-fills.
+
+## Revisions
+
+- Change only what he asks. "Just alter X" means touch nothing else.
+- "Scrap it" or "full rewrite" means a fresh concept for that slot, built from the surrounding songs and his
+  notes, not a polish of the old one.
+- When he loves a song, treat it as the bar for rewrites of its neighbors.
+- After feedback on some tracks, offer to apply it to the tracks he hasn't generated yet.
+- When feedback becomes a new standing rule, add it to this skill (and to `lyrics.py` if a program can
+  check it) so it applies from the next draft on.
