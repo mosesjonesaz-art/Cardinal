@@ -66,12 +66,14 @@ im i'm ive i've ill i'll id i'd youre you're it's dont cant wont aint ain't
 
 # Tags the Suno skill allows. A trailing number is fine: [Verse 2].
 SUNO_TAGS = {"intro", "verse", "pre-chorus", "chorus", "bridge", "breakdown", "spoken word",
-             "whispered", "break", "final chorus", "outro", "male", "female", "male & female"}
+             "whispered", "break", "final chorus", "outro", "male", "female", "male & female",
+             "choir", "male vocal", "female vocal"}
 VOICE_TAGS = {"male", "female", "male & female"}
 # Shorthand Suno would sing literally instead of repeating a section.
 SHORTHAND_RE = re.compile(r"\(\s*same\s*\)|\bx\s*\d\b|\brepeat\b|^\s*\.\.\.\s*$|…", re.I)
 # Tags that mark a voice or delivery change inside a section, not a new section.
-INLINE_TAGS = {"male", "female", "male & female", "whispered", "spoken word"}
+INLINE_TAGS = {"male", "female", "male & female", "whispered", "spoken word",
+               "choir", "male vocal", "female vocal"}
 # A line ending on one of these usually splits a clause; a line break is a breath.
 DANGLING_ENDS = {"a", "an", "the", "to", "of", "and", "or", "but", "my", "your", "our",
                  "their", "its", "than", "if", "because"}
@@ -85,7 +87,10 @@ DRIFT_WORDS = {
     "moonshine": "country", "y'all": "country", "holler": "country", "honky": "country",
     "dirt road": "country",
 }
-CAPS_OK = {"i", "god", "lord", "heaven", "hell", "hallelujah", "amen"}
+CAPS_OK = {"i", "god", "lord", "heaven", "hell", "hallelujah", "amen",
+           # Pronouns and titles capitalized for God (You, His, Most High).
+           "you", "your", "yours", "you're", "he", "he's", "his", "him", "me", "my", "mine", "most",
+           "high"}
 # Mundane, utility words Moses has called dumb in a lyric. When he says "replace X",
 # add X here so the check catches it next time. Plurals match too.
 MUNDANE_WORDS = [
@@ -180,10 +185,14 @@ def _vowels(phone_str: str) -> list[str]:
     The collapse lets broken (OW K AH N) slant-rhyme with hoping (OW P IH NG).
     """
     out = []
-    for p in phone_str.split():
+    toks = phone_str.split()
+    for i, p in enumerate(toks):
         if VOWEL_RE.match(p):
             base = _strip_stress(p)
-            out.append("@" if p.endswith("0") and base in SCHWA_LIKE else base)
+            v = "@" if p.endswith("0") and base in SCHWA_LIKE else base
+            if i + 1 < len(toks) and toks[i + 1] == "R":
+                v += "r"  # door (AO R) isn't a slant rhyme for long (AO)
+            out.append(v)
     return out
 
 
