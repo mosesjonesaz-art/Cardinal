@@ -15,6 +15,7 @@ checks for Suno songs and albums.
 python lyrics.py analyze song.txt                          # syllables + rhyme scheme per line
 python lyrics.py analyze song.txt --target 8,8,7,7 --scheme AABB   # flag misses, suggest fixes
 python lyrics.py analyze song.txt --suno                   # also check the Suno songwriting rules
+python lyrics.py analyze song.txt --max 8                  # flag lines over 8 syllables (album takes --max too)
 python lyrics.py line "I've been walking down this road" --target 8 --rhyme cold
 python lyrics.py rhymes fire --syllables 1                 # perfect + slant rhymes, common words first
 python lyrics.py words tired --syllables 1                 # synonyms: dead, spent, worn, drained...
@@ -57,6 +58,8 @@ in `songs/<album-slug>/album.md`, singles in `songs/singles/`.
 - **Section rules:** verses have 4-6 lines and pre-choruses 2-4. Choruses repeat exactly; only
   `[Final Chorus]` may change. The chorus must be leaner than the verses.
 - **Tags:** only standard Suno tags, with no descriptions inside them.
+- **Ready to paste:** every line written out, with no "(same)", "x2" or "repeat" shorthand. In duets,
+  `[Male]`, `[Female]` or `[Male & Female]` must sit above every line.
 - **Line rules:** no line ending on "the", "to", "and" and similar (a line break is a breath), no repeated
   sound-effect words, no proper names.
 - **Genre drift:** words that pulled songs out of their genre. Edit `DRIFT_WORDS` in `lyrics.py` to add more.
