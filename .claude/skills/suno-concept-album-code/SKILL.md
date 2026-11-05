@@ -36,10 +36,12 @@ These apply to every song, single or album, unless he says otherwise for that so
   the image. Verses can carry more detail than the chorus.
 - **Generate in v6.** When generating with the Suno tools, pass model "v6" unless he names a different
   model.
-- **Rhyme every line.** His biggest complaint: not enough rhyme. Default to schemes where every line
-  rhymes (ABAB, AABB, AAAA); use XAXA only when he asks for it. Prefer perfect rhymes, and use slant rhymes
-  when a perfect one would force a weak word. `lyrics.py --suno` flags any line that rhymes with nothing
-  in its section.
+- **Rhyme like a catchy song.** His complaint was too little rhyme, but the goal is a song that's catchy
+  and sounds great, not the most rhymes possible. Meet the catchy minimum: choruses and pre-choruses rhyme
+  every line, verses and bridges at least every other line. Go past it only where it sounds better.
+  Choose each rhyme by ear: a perfect rhyme when it comes naturally, a slant rhyme when the perfect one
+  would force a weak word. Never stack rhymes, or swap in slant rhymes, just to raise the count.
+  `lyrics.py --suno` flags sections below the minimum.
 - **Short lines.** Lyrics run too wordy. Keep every line to 8 syllables or fewer unless he sets a different
   limit, and keep choruses shorter than verses. Check with `--max 8`.
 - **No mundane objects.** Utility objects, chores and logistics read as dumb in a song: "the oil can's
@@ -295,8 +297,10 @@ Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
      nothing is saved.
   2. **Bring rhyme up to catchy.** Choruses and pre-choruses: every line rhymes with another line
      (repeated hook lines count). Verses and bridges: at least every other line (XAXA). Ideally one internal
-     rhyme in the chorus. Use slant rhymes freely. Reach the target by swapping end words for ones with the
-     same syllable count, changing as little else as possible. `--suno` flags sections below the target.
+     rhyme in the chorus. The minimum is a floor, not a goal: stop once it's met and the song sounds right,
+     and pick whichever rhyme sounds best, perfect or slant. Reach the floor by swapping end words for
+     ones with the same syllable count, changing as little else as possible. `--suno` flags sections
+     below the minimum.
   3. **Swap mundane objects for charged images** (oil can, kettle, mop, and words he marks "replace"), with
      the same syllable count and stress as the words they replace, so the melody still fits.
   4. **Point out crowded lines, don't silently cut them.** `--suno` flags lines 3 or more syllables
