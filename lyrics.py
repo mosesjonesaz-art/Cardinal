@@ -738,7 +738,9 @@ def check_style(prompt: str) -> list[str]:
     for term, lane in DRIFT_WORDS.items():
         if re.search(rf"\b{re.escape(term)}\b", low):
             issues.append(f"'{term}' reads as {lane}")
-    caps = [t for t in WORD_RE.findall(p)[1:] if t[0].isupper() and not t.isupper()]
+    caps = [m.group() for m in WORD_RE.finditer(p)
+            if m.start() > 0 and m.group()[0].isupper() and not m.group().isupper()
+            and not p[:m.start()].rstrip().endswith((".", ";", ":", "!", "?"))]  # skip sentence starts
     if caps:
         issues.append("capitalized words may be artist names (none allowed): " + ", ".join(caps))
     return issues
