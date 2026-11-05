@@ -24,6 +24,7 @@ python lyrics.py compare broken token open hoping          # how well words rhym
 python lyrics.py style "Ethereal emo slowcore, 64 BPM, ..."    # check a Suno style prompt
 python lyrics.py album songs/my-album/album.md             # check every track of an album
 python lyrics.py album songs/my-album/album.md --track 3   # one track in full
+python lyrics.py fit original.txt new.txt                  # will new lines fit the original melody?
 ```
 
 Example `analyze` output with a target and scheme:

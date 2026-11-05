@@ -286,18 +286,27 @@ Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
 
 ## His keywords
 
-- **"Upgrade"** means a light touch on a song he already likes. A heavy rewrite of 13 songs made them "a
-  lot worse than the originals", so on an existing song:
-  1. Keep his wording. Change a line only if it rhymes with nothing; then give it a slant rhyme (or
-     perfect) by changing as few words as possible.
-  2. Trim only overcrowded lines: about 10 or more syllables, or clearly longer than the lines around them.
-     Cut filler words; don't force every line to 8.
-  3. Replace only words he marks "replace", plus obvious utility objects from `MUNDANE_WORDS`.
-  4. Leave choruses and hook lines alone unless he asks. Leave lines that already work alone, even if the
-     checker flags them.
+- **"Upgrade"** means a light touch on a song he already likes, sung on its original melody (a cover).
+  A heavy rewrite of 13 songs made them "a lot worse than the originals": the covers kept the old melody,
+  and lines with new syllable counts no longer fit it. On an existing song:
+  1. **Fit the melody.** Every changed line keeps the original line's syllable count and pickup (the
+     unstressed syllables before the first stressed word). Check with `python lyrics.py fit <original>
+     <new>`; it must report every line fitting. Pass the two versions with `<(cat <<'EOF' ... EOF)` so
+     nothing is saved.
+  2. **Bring rhyme up to catchy.** Choruses and pre-choruses: every line rhymes with another line
+     (repeated hook lines count). Verses and bridges: at least every other line (XAXA). Ideally one internal
+     rhyme in the chorus. Use slant rhymes freely. Reach the target by swapping end words for ones with the
+     same syllable count, changing as little else as possible. `--suno` flags sections below the target.
+  3. **Swap mundane objects for charged images** (oil can, kettle, mop, and words he marks "replace"), with
+     the same syllable count and stress as the words they replace, so the melody still fits.
+  4. **Point out crowded lines, don't silently cut them.** `--suno` flags lines 3 or more syllables
+     longer or shorter than the rest of their section. Cutting syllables on a cover leaves notes over (a
+     held note, or a late entry), so list the crowded lines and ask how he wants them handled (see
+     "Crowded lines and the melody" below).
+  5. Leave choruses, hook lines and lines that already work alone unless a rule above needs them changed.
 
-  The strict defaults above (every line to 8 syllables, perfect rhymes first) are for new songs, not for
-  upgrading his existing ones.
+  The strict defaults above (every line to 8 syllables, perfect rhymes first) are for new songs, which get
+  a fresh melody anyway.
 - **"Boost"** means: make the song more awesome. Everything "upgrade" does, plus freedom to rewrite lines
   for impact.
   1. A sharper, more singable hook.
@@ -332,6 +341,21 @@ When he names songs to improve:
    it drifts. Keep changed lines close to the original's syllable count so they fit the old melody: a
    line one syllable short or long at the start ("let the last page" vs "the last page") is enough to
    sound rushed.
+
+## Crowded lines and the melody
+
+A melody sets one note per syllable, more or less. When a cover keeps the original melody, every line
+keeps its notes: extra syllables get crammed in (rushed), and missing syllables leave a note held or move
+where the singer comes in (moving "Stay" off the beat it used to land on). So making a line less crowded
+and keeping its melody pull against each other. The options, best first:
+
+1. **Keep the count, lighten the sound.** Crowding often comes from consonant clusters and stressed words on
+   quick notes, not from the count itself. Swap in words with the same count and open vowels.
+2. **Let the melody move.** Cover with a lower `audio_influence` (about 0.5-0.6). Suno keeps the feel but
+   re-phrases lines to fit the new counts. Generate, and let him pick the take.
+3. **New melody.** A fresh generation writes a melody for the new lyrics. It loses the old one entirely.
+4. **Fix one section.** Suno's editor on suno.com may let him regenerate only part of a song with new
+   lyrics. The connector can't do that, so suggest he try it there.
 
 ## Revisions
 

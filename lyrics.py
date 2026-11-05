@@ -21,6 +21,7 @@ Usage:
   python lyrics.py style "Ethereal emo slowcore, 64 BPM, ..."   # check a Suno style prompt
   python lyrics.py album songs/my-album/album.md         # check every track of an album
   python lyrics.py album songs/my-album/album.md --track 3
+  python lyrics.py fit original.txt new.txt              # will the new lines fit the old melody?
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import statistics
 import sys
 from functools import lru_cache
 
@@ -599,6 +601,77 @@ def prepare_sections(text: str) -> list[dict]:
     return sections
 
 
+# Share of a section's lines that should rhyme with another line in it.
+# Catchy pop choruses rhyme essentially every line; verses at least every other line.
+RHYME_TARGETS = {"chorus": 1.0, "final chorus": 1.0, "pre-chorus": 1.0, "default": 0.5}
+
+
+def rhyme_coverage(section: dict) -> tuple[int, list[str]]:
+    """(lines that rhyme with another line in the section, the unrhymed lines)."""
+    counts: dict[str, int] = {}
+    for letter, _ in section["scheme"]:
+        counts[letter.upper()] = counts.get(letter.upper(), 0) + 1
+    orphans = [a["text"].strip() for a, (letter, _) in zip(section["analyses"], section["scheme"])
+               if counts[letter.upper()] == 1]
+    return len(section["analyses"]) - len(orphans), orphans
+
+
+def _pickup(words: list[str]) -> int:
+    """Syllables sung before the first stressed one (the line's pickup into the beat)."""
+    n = 0
+    for w in words:
+        stresses = stress_pattern(w)
+        if len(stresses) == 1 and w in STOPWORDS:
+            stresses = "0"  # one-syllable function words are sung unstressed
+        for ch in stresses:
+            if ch in "12":
+                return n
+            n += 1
+    return n
+
+
+def fit_report(original: str, new: str) -> str:
+    """Compare new lyrics to the original line by line, for singing on the original melody.
+
+    A cover keeps the original melody, which has a fixed number of notes per
+    line. Each extra syllable has to be crammed in; each missing one leaves a
+    note held longer or shifts where the singer comes in. Lines are matched in
+    order within sections that appear in the same order.
+    """
+    a_secs = [s for s in prepare_sections(original) if s["analyses"]]
+    b_secs = [s for s in prepare_sections(new) if s["analyses"]]
+    out, changed, total = [], 0, 0
+    if len(a_secs) != len(b_secs):
+        out.append(f"Section count differs: original {len(a_secs)}, new {len(b_secs)}. "
+                   "Lines are compared in order, so later sections may be misaligned.")
+    for sa, sb in zip(a_secs, b_secs):
+        tag = sb["tag"] or sa["tag"] or "untagged"
+        if len(sa["analyses"]) != len(sb["analyses"]):
+            out.append(f"[{tag}] has {len(sa['analyses'])} lines in the original and "
+                       f"{len(sb['analyses'])} in the new version; the melody has no notes for extra "
+                       "lines and leaves a gap for missing ones")
+        for la, lb in zip(sa["analyses"], sb["analyses"]):
+            total += 1
+            diff = lb["syllables"] - la["syllables"]
+            pick = _pickup(lb["words"]) - _pickup(la["words"])
+            if diff == 0 and pick == 0:
+                continue
+            changed += 1
+            notes = []
+            if diff > 0:
+                notes.append(f"+{diff} syllable{'s' * (diff > 1)}: crammed into the same notes")
+            elif diff < 0:
+                notes.append(f"{diff} syllable{'s' * (-diff > 1)}: a note gets held, or the entry moves")
+            if pick:
+                notes.append(f"pickup {'+' if pick > 0 else ''}{pick}: the first stressed word lands "
+                             f"{'later' if pick > 0 else 'earlier'} than before")
+            out.append(f"[{tag}]\n  original ({la['syllables']:>2}): {la['text'].strip()}\n"
+                       f"  new      ({lb['syllables']:>2}): {lb['text'].strip()}\n  -> {'; '.join(notes)}")
+    out.append(f"\n{total - changed} of {total} lines fit the original melody's syllable count and "
+               f"pickup; {changed} differ.")
+    return "\n".join(out)
+
+
 def suno_checks(sections: list[dict]) -> list[str]:
     """Rules from the Suno songwriting skill that a program can check."""
     issues: list[str] = []
@@ -641,16 +714,25 @@ def suno_checks(sections: list[dict]) -> list[str]:
                 if re.search(rf"\b{re.escape(term)}(?:s|es)?\b", joined):
                     issues.append(f"{where}: '{term}' is mundane; replace it with a different image")
 
-        # Every line should rhyme with another line in its section.
+        # Rhyme coverage: catchy songs rhyme every chorus line and at least
+        # every other verse line.
         if len(s["analyses"]) > 1:
-            counts: dict[str, int] = {}
-            for letter, _ in s["scheme"]:
-                counts[letter.upper()] = counts.get(letter.upper(), 0) + 1
-            orphans = [a["text"].strip() for a, (letter, _) in zip(s["analyses"], s["scheme"])
-                       if counts[letter.upper()] == 1]
-            if orphans:
-                issues.append(f"[{tag}] has {len(orphans)} line(s) that rhyme with nothing: "
+            rhymed, orphans = rhyme_coverage(s)
+            target = RHYME_TARGETS.get(base, RHYME_TARGETS["default"])
+            if rhymed / len(s["analyses"]) < target:
+                issues.append(f"[{tag}] rhymes {rhymed} of {len(s['analyses'])} lines "
+                              f"(catchy minimum {target:.0%}); unrhymed: "
                               + " / ".join(f'"{o}"' for o in orphans))
+
+        # Crowded or sparse lines: far from the section's usual length, the
+        # singer has to cram syllables in or stretch a note to fill the melody.
+        if len(s["analyses"]) >= 3:
+            usual = statistics.median(a["syllables"] for a in s["analyses"])
+            for a in s["analyses"]:
+                if abs(a["syllables"] - usual) >= 3:
+                    kind = "crowded" if a["syllables"] > usual else "sparse"
+                    issues.append(f"[{tag}] \"{a['text'].strip()}\" is {kind}: {a['syllables']} "
+                                  f"syllables vs about {usual:g} in the rest of the section")
 
     for base in ("verse", "pre-chorus", "chorus"):
         shapes = {s["tag"]: s["shape"] for s in by_base.get(base, []) if s["shape"]}
@@ -759,8 +841,10 @@ def analyze_text(text: str, show_stress: bool = False, target: list[int] | None 
             idx += 1
         if s["analyses"]:
             total = sum(a["syllables"] for a in s["analyses"])
+            rhymed, _ = rhyme_coverage(s)
             out.append(f"          = {len(s['analyses'])} lines, {total} syllables "
-                       f"(avg {total / len(s['analyses']):.1f}), scheme {s['shape']}")
+                       f"(avg {total / len(s['analyses']):.1f}), scheme {s['shape']}, "
+                       f"{rhymed}/{len(s['analyses'])} lines rhyme")
         out.append("")
 
     out.append("Legend: number = syllables, letter = rhyme group "
@@ -945,6 +1029,10 @@ def main(argv: list[str] | None = None) -> int:
     c = sub.add_parser("compare", help="rate how well words rhyme with the first")
     c.add_argument("words", nargs="+")
 
+    fi = sub.add_parser("fit", help="compare new lyrics to the original, for a cover on the original melody")
+    fi.add_argument("original", help="original lyrics file (or - for stdin)")
+    fi.add_argument("new", help="new lyrics file (or - for stdin)")
+
     al = sub.add_parser("album", help="check every track in an album markdown file")
     al.add_argument("file")
     al.add_argument("--track", type=int, help="show one track's full analysis")
@@ -1017,6 +1105,11 @@ def main(argv: list[str] | None = None) -> int:
             label, depth = rhyme_quality(base, o)
             extra = f", {depth} vowel sound(s) match from the end" if depth else ""
             print(f"{base} / {o}: {label}{extra}")
+
+    elif args.cmd == "fit":
+        if args.original == "-" and args.new == "-":
+            ap.error("only one of the two files can be stdin")
+        print(fit_report(_read(args.original), _read(args.new)))
 
     elif args.cmd == "album":
         print(album_report(_read(args.file), args.track, args.max))
