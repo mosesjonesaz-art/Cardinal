@@ -37,11 +37,14 @@ These apply to every song, single or album, unless he says otherwise for that so
 - **Generate in v6.** When generating with the Suno tools, pass model "v6" unless he names a different
   model.
 
-## Files
+## Deliverable
 
-One album file per album, `songs/<album-slug>/album.md`. Singles go in `songs/singles/<song-slug>.md`
-with the same track-section format (no tracklist or threads tables). The album file follows the original
-deliverable, in this order:
+**Don't save songs or style prompts unless he tells you to.** No files in the repo, no commits. Give the
+work in the chat, and run the checks by piping the text to `lyrics.py` (see Workflow), so nothing is
+written to disk.
+
+The deliverable, in the chat (or in the file he asks for), in this order. A single song is just the track
+section, without the tracklist or threads tables:
 
 1. **Concept**: a short paragraph, plus the recurring personas or attitudes if the album has them.
 2. **Tracklist table**: #, title, persona/attitude, BPM, one-line vibe.
@@ -89,20 +92,25 @@ One to three sentences: what the song is, which callbacks it carries.
 labels exactly like this. Keep track numbers, the tracklist, and the threads table in sync whenever a
 track is added, moved, or rewritten; `lyrics.py album` flags tracklist rows whose title or BPM don't match.
 
-If he asks for a Claude doc as well, publish the finished album file's content to one (the docs tools,
-when available), but keep the repo file as the version the tools check.
+When he asks you to save: albums go in `songs/<album-slug>/album.md` and singles in
+`songs/singles/<song-slug>.md`, in this layout. Commit and push what he asked to save. If he asks for a
+Claude doc, publish to one with the docs tools, when available.
 
 ## Workflow
 
 1. Draft the tracklist and threads first, then each track.
-2. Write each track's lyrics and style prompt into the album file.
-3. Check the whole album: `python lyrics.py album songs/<album>/album.md`. Then look at each track in
-   full: `python lyrics.py album songs/<album>/album.md --track N`. This shows syllables and the detected
+2. Write each track's lyrics and style prompt in the layout above.
+3. Check it by piping the text in (`-` reads stdin), so nothing is saved:
+   ```bash
+   python lyrics.py album - --track 1 <<'EOF'
+   ...the album or song text in the layout above...
+   EOF
+   ```
+   Without `--track`, `album -` summarizes every track. The full view shows syllables and the detected
    rhyme scheme per line, internal rhymes, a summary for each section, the Suno checks, and the style check.
 4. Fix what it flags, then check again until it's clean. For lines you want tighter (choruses), or when you
-   chose a scheme, put the section in a scratch file and run
-   `python lyrics.py analyze <file> --scheme XAXA --target 6,6,6,6`. When he sets a syllable limit, check
-   the whole track with `python lyrics.py album <file> --track N --max 8`. Lines that miss get `fix:`
+   chose a scheme, pipe just the lyrics into `python lyrics.py analyze - --scheme XAXA --target 6,6,6,6`.
+   When he sets a syllable limit, add `--max 8` to either command. Lines that miss get `fix:`
    suggestions (end words that rhyme and fix the count) and `swap:` suggestions (synonyms with the right
    syllable count).
 5. To find words: `python lyrics.py rhymes <word> [--syllables N]` for perfect and slant rhymes;
@@ -111,7 +119,7 @@ when available), but keep the repo file as the version the tools check.
    ones that fit the image and the genre lane, and rewrite the line when one swapped word isn't enough.
 6. The tools check counts, sounds and mechanical rules. They can't judge taste. Read every line against
    the writing standard below before showing it to him.
-7. Commit and push the album file after each round of changes, so nothing is lost when the session ends.
+7. Show him the result in the chat. Save or commit only when he asks.
 
 What the tools check, and what's left to you:
 
@@ -243,7 +251,7 @@ Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
   one call.
 - If Suno says songs are starting too quickly, wait the seconds it asks and retry that song.
 - Generating spends his credits: generate only the tracks he asks for.
-- Under the track's section in the album file, add a `Takes:` line with both links, and commit it.
+- If he has asked you to save the song, add a `Takes:` line with both links under its track section.
 
 ## Suno Voice tips (check the current Suno UI if anything looks different)
 
