@@ -36,12 +36,10 @@ These apply to every song, single or album, unless he says otherwise for that so
   the image. Verses can carry more detail than the chorus.
 - **Generate in v6.** When generating with the Suno tools, pass model "v6" unless he names a different
   model.
-- **Rhyme like a catchy song.** His complaint was too little rhyme, but the goal is a song that's catchy
-  and sounds great, not the most rhymes possible. Meet the catchy minimum: choruses and pre-choruses rhyme
-  every line, verses and bridges at least every other line. Go past it only where it sounds better.
-  Choose each rhyme by ear: a perfect rhyme when it comes naturally, a slant rhyme when the perfect one
-  would force a weak word. Never stack rhymes, or swap in slant rhymes, just to raise the count.
-  `lyrics.py --suno` flags sections below the minimum.
+- **Rhyme every line.** His biggest complaint: not enough rhyme. Default to schemes where every line
+  rhymes (ABAB, AABB, AAAA); use XAXA only when he asks for it. Prefer perfect rhymes, and use slant rhymes
+  when a perfect one would force a weak word. `lyrics.py --suno` flags any line that rhymes with nothing
+  in its section.
 - **Short lines.** Lyrics run too wordy. Keep every line to 8 syllables or fewer unless he sets a different
   limit, and keep choruses shorter than verses. Check with `--max 8`.
 - **No mundane objects.** Utility objects, chores and logistics read as dumb in a song: "the oil can's
@@ -288,29 +286,13 @@ Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
 
 ## His keywords
 
-- **"Upgrade"** means a light touch on a song he already likes, sung on its original melody (a cover).
-  A heavy rewrite of 13 songs made them "a lot worse than the originals": the covers kept the old melody,
-  and lines with new syllable counts no longer fit it. On an existing song:
-  1. **Fit the melody.** Every changed line keeps the original line's syllable count and pickup (the
-     unstressed syllables before the first stressed word). Check with `python lyrics.py fit <original>
-     <new>`; it must report every line fitting. Pass the two versions with `<(cat <<'EOF' ... EOF)` so
-     nothing is saved.
-  2. **Bring rhyme up to catchy.** Choruses and pre-choruses: every line rhymes with another line
-     (repeated hook lines count). Verses and bridges: at least every other line (XAXA). Ideally one internal
-     rhyme in the chorus. The minimum is a floor, not a goal: stop once it's met and the song sounds right,
-     and pick whichever rhyme sounds best, perfect or slant. Reach the floor by swapping end words for
-     ones with the same syllable count, changing as little else as possible. `--suno` flags sections
-     below the minimum.
-  3. **Swap mundane objects for charged images** (oil can, kettle, mop, and words he marks "replace"), with
-     the same syllable count and stress as the words they replace, so the melody still fits.
-  4. **Point out crowded lines, don't silently cut them.** `--suno` flags lines 3 or more syllables
-     longer or shorter than the rest of their section. Cutting syllables on a cover leaves notes over (a
-     held note, or a late entry), so list the crowded lines and ask how he wants them handled (see
-     "Crowded lines and the melody" below).
-  5. Leave choruses, hook lines and lines that already work alone unless a rule above needs them changed.
+- **"Upgrade"** means: fix his standing complaints and nothing else.
+  1. Rhyme every line with a deliberate scheme, the same in matching sections.
+  2. Cut every line to 8 syllables or fewer (or his limit), with choruses leaner than verses.
+  3. Replace mundane objects with charged images.
 
-  The strict defaults above (every line to 8 syllables, perfect rhymes first) are for new songs, which get
-  a fresh melody anyway.
+  Keep the concept, structure, hook lines, imagery that already works, and the style prompt. Change only
+  what those three fixes need.
 - **"Boost"** means: make the song more awesome. Everything "upgrade" does, plus freedom to rewrite lines
   for impact.
   1. A sharper, more singable hook.
@@ -335,37 +317,15 @@ When he names songs to improve:
    twice with the same lyrics (that's why his albums always have an even number of songs). Read one take
    unless the two differ.
 2. Do what his keyword asks ("upgrade", "boost", or both; with no keyword, upgrade). Check with
-   `python lyrics.py analyze - --suno` and fix only what the keyword covers.
+   `python lyrics.py analyze - --suno --max 8`.
 3. Give each song back in the chat, every line written out and ready to paste. Say in a few bullets what
    changed. Don't save anything, and generate in Suno only when he asks.
-4. **Regenerate an existing song as a cover of its original**, not a fresh generation: `audio-covers-create`
-   with the original clip's id, the new lyrics, its style prompt, and `model: "v6"`. Set
-   `controls.audio_influence` to:
-   - **0.5 when any line's syllable count changed.** This is what worked: both 0.5 covers of "Stay in the
-     Story" were "great". Suno keeps the original's feel and re-phrases the changed lines.
-   - 0.8 only when every changed line fits the original exactly (`fit` passes on every line). At 0.8,
-     shortened lines were forced onto the old notes and sounded rushed.
-
-   A fresh generation writes a brand-new melody even when the chorus words are identical. On "Stay in the
-   Story" the fresh generation was "a miss" next to the covers, so don't generate fresh unless he asks. Keep changed lines close to the original's syllable count so they fit the old melody: a
-   line one syllable short or long at the start ("let the last page" vs "the last page") is enough to
-   sound rushed.
-
-## Crowded lines and the melody
-
-A melody sets one note per syllable, more or less. When a cover keeps the original melody, every line
-keeps its notes: extra syllables get crammed in (rushed), and missing syllables leave a note held or move
-where the singer comes in (moving "Stay" off the beat it used to land on). So making a line less crowded
-and keeping its melody pull against each other. The options, best first:
-
-1. **Keep the count, lighten the sound.** Crowding often comes from consonant clusters and stressed words on
-   quick notes, not from the count itself. Swap in words with the same count and open vowels.
-2. **Let the melody move.** Cover at `audio_influence` 0.5 (his "great" results). Suno keeps the feel and
-   re-phrases lines to fit the new counts. A long line answered by a short one works: "Stay in the story
-   for a little while / don't turn the last page yet" (10, then 6).
-3. **New melody.** A fresh generation writes a melody for the new lyrics. It loses the old one entirely.
-4. **Fix one section.** Suno's editor on suno.com may let him regenerate only part of a song with new
-   lyrics. The connector can't do that, so suggest he try it there.
+4. **Generate it as a 50% cover of the original he liked**, never a fresh generation:
+   `audio-covers-create` with the original clip's id (the take from his Liked list), the new lyrics, the
+   original's style prompt, `model: "v6"`, and `controls: {"audio_influence": 0.5}`. He loved the
+   rewritten lyrics but not the new melodies: a fresh generation writes a brand-new melody, while a 50%
+   cover keeps the original's melody and feel and re-phrases the lines to fit the new syllable counts.
+   (At 0.8, shortened lines were forced onto the old notes and sounded rushed.)
 
 ## Revisions
 

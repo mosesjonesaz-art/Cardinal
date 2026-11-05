@@ -602,8 +602,8 @@ def prepare_sections(text: str) -> list[dict]:
 
 
 # Share of a section's lines that should rhyme with another line in it.
-# Catchy pop choruses rhyme essentially every line; verses at least every other line.
-RHYME_TARGETS = {"chorus": 1.0, "final chorus": 1.0, "pre-chorus": 1.0, "default": 0.5}
+# Moses's rule: every line rhymes, in every section.
+RHYME_TARGETS = {"default": 1.0}
 
 
 def rhyme_coverage(section: dict) -> tuple[int, list[str]]:
@@ -714,14 +714,13 @@ def suno_checks(sections: list[dict]) -> list[str]:
                 if re.search(rf"\b{re.escape(term)}(?:s|es)?\b", joined):
                     issues.append(f"{where}: '{term}' is mundane; replace it with a different image")
 
-        # Rhyme coverage: catchy songs rhyme every chorus line and at least
-        # every other verse line.
+        # Rhyme coverage: every line should rhyme with another line in its section.
         if len(s["analyses"]) > 1:
             rhymed, orphans = rhyme_coverage(s)
             target = RHYME_TARGETS.get(base, RHYME_TARGETS["default"])
             if rhymed / len(s["analyses"]) < target:
                 issues.append(f"[{tag}] rhymes {rhymed} of {len(s['analyses'])} lines "
-                              f"(catchy minimum {target:.0%}); unrhymed: "
+                              f"(target {target:.0%}); unrhymed: "
                               + " / ".join(f'"{o}"' for o in orphans))
 
         # Crowded or sparse lines: far from the section's usual length, the
