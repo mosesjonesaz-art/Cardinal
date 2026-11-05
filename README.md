@@ -63,6 +63,8 @@ in `songs/<album-slug>/album.md`, singles in `songs/singles/`.
 - **Line rules:** no line ending on "the", "to", "and" and similar (a line break is a breath), no repeated
   sound-effect words, no proper names.
 - **Genre drift:** words that pulled songs out of their genre. Edit `DRIFT_WORDS` in `lyrics.py` to add more.
+- **Rhyme coverage:** every line should rhyme with another line in its section.
+- **Mundane words:** utility objects and chores (oil can, kettle...). Add to `MUNDANE_WORDS` in `lyrics.py`.
 - **Style prompts:** 200-350 characters, with a BPM, a vocal description and no artist names.
 - **Album level:** BPMs spread out, and the tracklist table matching the track sections.
 

@@ -86,6 +86,12 @@ DRIFT_WORDS = {
     "dirt road": "country",
 }
 CAPS_OK = {"i", "god", "lord", "heaven", "hell", "hallelujah", "amen"}
+# Mundane, utility words Moses has called dumb in a lyric. When he says "replace X",
+# add X here so the check catches it next time. Plurals match too.
+MUNDANE_WORDS = [
+    "oil can", "kettle", "half an hour", "clock in", "clocked in", "taxes", "toaster",
+    "microwave", "laundry", "dishwasher", "vacuum", "groceries", "spreadsheet", "paperwork",
+]
 
 
 # ---------------------------------------------------------------- words ----
@@ -622,6 +628,20 @@ def suno_checks(sections: list[dict]) -> list[str]:
             for term, lane in DRIFT_WORDS.items():
                 if re.search(rf"\b{re.escape(term)}\b", joined):
                     issues.append(f"{where}: '{term}' can pull the song toward {lane}")
+            for term in MUNDANE_WORDS:
+                if re.search(rf"\b{re.escape(term)}(?:s|es)?\b", joined):
+                    issues.append(f"{where}: '{term}' is mundane; replace it with a different image")
+
+        # Every line should rhyme with another line in its section.
+        if len(s["analyses"]) > 1:
+            counts: dict[str, int] = {}
+            for letter, _ in s["scheme"]:
+                counts[letter.upper()] = counts.get(letter.upper(), 0) + 1
+            orphans = [a["text"].strip() for a, (letter, _) in zip(s["analyses"], s["scheme"])
+                       if counts[letter.upper()] == 1]
+            if orphans:
+                issues.append(f"[{tag}] has {len(orphans)} line(s) that rhyme with nothing: "
+                              + " / ".join(f'"{o}"' for o in orphans))
 
     for base in ("verse", "pre-chorus", "chorus"):
         shapes = {s["tag"]: s["shape"] for s in by_base.get(base, []) if s["shape"]}

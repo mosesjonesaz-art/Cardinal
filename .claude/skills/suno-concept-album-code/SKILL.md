@@ -36,6 +36,19 @@ These apply to every song, single or album, unless he says otherwise for that so
   the image. Verses can carry more detail than the chorus.
 - **Generate in v6.** When generating with the Suno tools, pass model "v6" unless he names a different
   model.
+- **Rhyme every line.** His biggest complaint: not enough rhyme. Default to schemes where every line
+  rhymes (ABAB, AABB, AAAA); use XAXA only when he asks for it. Prefer perfect rhymes, and use slant rhymes
+  when a perfect one would force a weak word. `lyrics.py --suno` flags any line that rhymes with nothing
+  in its section.
+- **Short lines.** Lyrics run too wordy. Keep every line to 8 syllables or fewer unless he sets a different
+  limit, and keep choruses shorter than verses. Check with `--max 8`.
+- **No mundane objects.** Utility objects, chores and logistics read as dumb in a song: "the oil can's
+  waiting on the shelf," "I put the kettle on for two," "it's half an hour, a turn or two." Choose images
+  with charge, a little dangerous or a little beautiful: a hinge singing in the rain, yes; the oil can that
+  fixes it, no. `lyrics.py --suno` flags words from `MUNDANE_WORDS`.
+- **"Replace" means a new idea.** When he writes "replace X", X is the wrong concept, not the wrong word.
+  Swap in a different image that fits the song's world, never a synonym (don't reach for
+  `lyrics.py words` here). Then add X to `MUNDANE_WORDS` in `lyrics.py` so the check catches it next time.
 
 ## Deliverable
 
@@ -127,6 +140,9 @@ What the tools check, and what's left to you:
 |------|------------------------|---------------|
 | Rhyme scheme held across matching sections | yes: section schemes compared | which scheme fits |
 | No rhyming a word with itself | yes | |
+| Every line rhymes with another line in its section | yes | which lines pair up |
+| Lines of 8 syllables or fewer | yes, with `--max 8` | where to cut |
+| No mundane objects; "replace" words | flags `MUNDANE_WORDS` (add each "replace" word) | what's cool: the new image |
 | Internal rhymes sometimes | counts them per line | where they add lift |
 | Lean chorus | flags a chorus as long as the verses; shows syllables per section | the fewest words that carry the hook |
 | Verses 4-6 lines, pre-choruses 2-4 | yes | |
@@ -164,6 +180,7 @@ it hits hardest, usually the hook.
 Cut on sight:
 
 - The mundane, literal thing: "Wake up. Clock in. Do the right things." (reads like a kid wrote it)
+- Utility objects and chores: "The oil can's waiting on the shelf," "I put the kettle on for two"
 - Cutesy-clever lines: "I'm a lion doing taxes in a very nice cage"
 - Metaphors that announce the concept: "two moths in a jar"
 - Spelling out the meaning: "here comes the truth like a cannonball," "let's avoid this," "unconditional,
@@ -266,6 +283,20 @@ Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
 - Create a Voice from the song whose singer he likes. Put only vocal descriptors in its Styles field (no BPM
   or instruments), and delete the source song's lyrics from it.
 - For each new track, paste that track's style prompt over whatever the Voice auto-fills.
+
+## Improving his existing songs
+
+When he names songs to improve:
+
+1. Find each one in his Suno library with `library-search` (or `library-list`), then read its lyrics and
+   style prompt with `audio-retrieve`. Every generation makes two takes, so each song usually appears
+   twice with the same lyrics (that's why his albums always have an even number of songs). Read one take
+   unless the two differ.
+2. Keep his structure, his hook lines, and his style prompt word for word. Fix what he complains about:
+   make every line rhyme, cut lines to 8 syllables or fewer, and replace mundane objects with charged
+   images. Check with `python lyrics.py analyze - --suno --max 8`.
+3. Give each song back in the chat, every line written out and ready to paste. Say in a few bullets what
+   changed. Don't save anything, and generate in Suno only when he asks.
 
 ## Revisions
 
