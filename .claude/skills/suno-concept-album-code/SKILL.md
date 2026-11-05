@@ -284,6 +284,30 @@ Only when he asks. With the Suno tools (`audio-create`, then `audio-wait`):
   or instruments), and delete the source song's lyrics from it.
 - For each new track, paste that track's style prompt over whatever the Voice auto-fills.
 
+## His keywords
+
+- **"Upgrade"** means: fix his standing complaints and nothing else.
+  1. Rhyme every line with a deliberate scheme, the same in matching sections.
+  2. Cut every line to 8 syllables or fewer (or his limit), with choruses leaner than verses.
+  3. Replace mundane objects with charged images.
+
+  Keep the concept, structure, hook lines, imagery that already works, and the style prompt. Change only
+  what those three fixes need.
+- **"Boost"** means: make the song more awesome. Everything "upgrade" does, plus freedom to rewrite lines
+  for impact.
+  1. A sharper, more singable hook.
+  2. Bolder images, a little dangerous or a little beautiful.
+  3. Internal rhymes for lift.
+  4. A final chorus that flips or twists the hook.
+  5. A bridge that raises the stakes.
+
+  Keep the concept, title, section structure, and style prompt unless he says otherwise. Hold to the
+  writing standard: awesome, not cheesy.
+- **"Replace X"** means X is the wrong concept: see "No mundane objects" above.
+
+These can be combined ("upgrade and boost this"), and they apply to songs he pastes or names from his
+Suno library.
+
 ## Improving his existing songs
 
 When he names songs to improve:
@@ -292,9 +316,8 @@ When he names songs to improve:
    style prompt with `audio-retrieve`. Every generation makes two takes, so each song usually appears
    twice with the same lyrics (that's why his albums always have an even number of songs). Read one take
    unless the two differ.
-2. Keep his structure, his hook lines, and his style prompt word for word. Fix what he complains about:
-   make every line rhyme, cut lines to 8 syllables or fewer, and replace mundane objects with charged
-   images. Check with `python lyrics.py analyze - --suno --max 8`.
+2. Do what his keyword asks ("upgrade", "boost", or both; with no keyword, upgrade). Check with
+   `python lyrics.py analyze - --suno --max 8`.
 3. Give each song back in the chat, every line written out and ready to paste. Say in a few bullets what
    changed. Don't save anything, and generate in Suno only when he asks.
 
