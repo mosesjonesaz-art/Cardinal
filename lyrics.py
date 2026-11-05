@@ -11,6 +11,7 @@ Usage:
   python lyrics.py analyze song.txt --target 8,8,8,8 --scheme ABAB
                                                          # flag misses, suggest fixes
   python lyrics.py analyze song.txt --suno               # also check Suno song rules
+  python lyrics.py analyze song.txt --max 8              # flag lines over 8 syllables
   python lyrics.py analyze -                             # read lyrics from stdin
   python lyrics.py line "I've been walking down this road" --target 8 --rhyme cold
   python lyrics.py rhymes fire --syllables 2             # perfect + slant rhymes
@@ -640,13 +641,14 @@ def suno_checks(sections: list[dict]) -> list[str]:
 
 
 def analyze_text(text: str, show_stress: bool = False, target: list[int] | None = None,
-                 scheme: str | None = None, suno: bool = False) -> str:
+                 scheme: str | None = None, suno: bool = False, max_syl: int | None = None) -> str:
     """Report syllables and rhyme groups per line.
 
     `target` (syllables per line) and `scheme` (e.g. "ABAB"; X = no rhyme
     needed) are cycled over the lines of each section. Lines that miss either
     get a flag plus "fix:" (rhyming end words) and "swap:" (synonyms) lines.
-    `suno` adds the checks from the Suno songwriting skill.
+    `suno` adds the checks from the Suno songwriting skill. `max_syl` flags
+    lines longer than that many syllables.
     """
     sections = prepare_sections(text)
     out: list[str] = []
@@ -673,6 +675,9 @@ def analyze_text(text: str, show_stress: bool = False, target: list[int] | None 
             want = target[idx % len(target)] if target else None
             if want is not None and a["syllables"] != want:
                 flags.append(f"{a['syllables']} vs target {want}")
+            elif max_syl is not None and a["syllables"] > max_syl:
+                flags.append(f"{a['syllables']} syllables, max {max_syl}")
+                want = max_syl
             rhyme_with = None  # word the suggestions should rhyme with
             if scheme:
                 intended = scheme[idx % len(scheme)].upper()
@@ -713,7 +718,7 @@ def analyze_text(text: str, show_stress: bool = False, target: list[int] | None 
         out.append("Estimated (not in CMU dictionary): " + ", ".join(sorted(total_estimated)))
     if total_lines:
         out.append(f"Internal rhymes on {lines_with_internal} of {total_lines} lines.")
-    if target or scheme:
+    if target or scheme or max_syl:
         out.append(f"{problems} line(s) need work." if problems else "All lines hit the targets.")
     if suno:
         issues = suno_checks(sections)
@@ -790,7 +795,7 @@ def parse_album(text: str) -> dict:
     return {"tracks": tracks, "table": table}
 
 
-def album_report(text: str, track: int | None = None) -> str:
+def album_report(text: str, track: int | None = None, max_syl: int | None = None) -> str:
     """Check every track of an album file, or show one track in full."""
     album = parse_album(text)
     tracks = album["tracks"]
@@ -801,7 +806,8 @@ def album_report(text: str, track: int | None = None) -> str:
         if t is None:
             return f"No track {track}."
         style_issues = check_style(t["style"]) if t["style"] else ["no Style block"]
-        return (f"{t['num']:02d} · {t['title']}\n\n" + analyze_text(t["lyrics"], suno=True)
+        return (f"{t['num']:02d} · {t['title']}\n\n"
+                + analyze_text(t["lyrics"], suno=True, max_syl=max_syl)
                 + "\n\nStyle: " + ("looks good." if not style_issues else "")
                 + "".join(f"\n- {i}" for i in style_issues))
 
@@ -811,7 +817,12 @@ def album_report(text: str, track: int | None = None) -> str:
         if not t["lyrics"]:
             problems.append("no Lyrics block")
         else:
-            problems += suno_checks(prepare_sections(t["lyrics"]))
+            sections = prepare_sections(t["lyrics"])
+            problems += suno_checks(sections)
+            if max_syl:
+                over = sum(a["syllables"] > max_syl for sec in sections for a in sec["analyses"])
+                if over:
+                    problems.append(f"{over} line(s) over {max_syl} syllables")
         problems += [f"style: {i}" for i in (check_style(t["style"]) if t["style"] else ["no Style block"])]
         m = BPM_RE.search(t["style"])
         bpm = int(m.group(1)) if m else None
@@ -860,6 +871,7 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("--target", help="comma-separated syllable targets, cycled per section (e.g. 8,8,8,8)")
     a.add_argument("--scheme", help="rhyme scheme to check, cycled per section (e.g. ABAB, AABB; X = no rhyme)")
     a.add_argument("--suno", action="store_true", help="also check the Suno songwriting rules")
+    a.add_argument("--max", type=int, help="flag lines with more than this many syllables")
 
     l = sub.add_parser("line", help="syllables and stress for a single line")
     l.add_argument("text", nargs="+")
@@ -885,6 +897,7 @@ def main(argv: list[str] | None = None) -> int:
     al = sub.add_parser("album", help="check every track in an album markdown file")
     al.add_argument("file")
     al.add_argument("--track", type=int, help="show one track's full analysis")
+    al.add_argument("--max", type=int, help="flag lines with more than this many syllables")
 
     st = sub.add_parser("style", help="check a Suno style prompt (text, a file path, or - for stdin)")
     st.add_argument("prompt", nargs="+")
@@ -893,7 +906,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "analyze":
         target = [int(x) for x in args.target.split(",")] if args.target else None
-        print(analyze_text(_read(args.file), args.stress, target, args.scheme, args.suno))
+        print(analyze_text(_read(args.file), args.stress, target, args.scheme, args.suno, args.max))
 
     elif args.cmd == "line":
         res = analyze_line(" ".join(args.text))
@@ -955,7 +968,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{base} / {o}: {label}{extra}")
 
     elif args.cmd == "album":
-        print(album_report(_read(args.file), args.track))
+        print(album_report(_read(args.file), args.track, args.max))
 
     elif args.cmd == "style":
         text = " ".join(args.prompt)

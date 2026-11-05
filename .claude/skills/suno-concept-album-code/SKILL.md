@@ -101,7 +101,8 @@ when available), but keep the repo file as the version the tools check.
    rhyme scheme per line, internal rhymes, a summary for each section, the Suno checks, and the style check.
 4. Fix what it flags, then check again until it's clean. For lines you want tighter (choruses), or when you
    chose a scheme, put the section in a scratch file and run
-   `python lyrics.py analyze <file> --scheme XAXA --target 6,6,6,6`. Lines that miss get `fix:`
+   `python lyrics.py analyze <file> --scheme XAXA --target 6,6,6,6`. When he sets a syllable limit, check
+   the whole track with `python lyrics.py album <file> --track N --max 8`. Lines that miss get `fix:`
    suggestions (end words that rhyme and fix the count) and `swap:` suggestions (synonyms with the right
    syllable count).
 5. To find words: `python lyrics.py rhymes <word> [--syllables N]` for perfect and slant rhymes;

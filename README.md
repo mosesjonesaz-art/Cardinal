@@ -15,6 +15,7 @@ checks for Suno songs and albums.
 python lyrics.py analyze song.txt                          # syllables + rhyme scheme per line
 python lyrics.py analyze song.txt --target 8,8,7,7 --scheme AABB   # flag misses, suggest fixes
 python lyrics.py analyze song.txt --suno                   # also check the Suno songwriting rules
+python lyrics.py analyze song.txt --max 8                  # flag lines over 8 syllables (album takes --max too)
 python lyrics.py line "I've been walking down this road" --target 8 --rhyme cold
 python lyrics.py rhymes fire --syllables 1                 # perfect + slant rhymes, common words first
 python lyrics.py words tired --syllables 1                 # synonyms: dead, spent, worn, drained...
