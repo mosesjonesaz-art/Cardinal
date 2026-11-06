@@ -34,3 +34,7 @@ force a weak word just to hit a rhyme.
 
 **Don't save songs or style prompts (files or commits) unless Moses asks.** Give them in the chat. When he
 asks to save, use `songs/` and commit and push.
+
+**GPT kit:** `gpt/` and `AGENTS.md` are the ChatGPT/Codex copies of this process. When the skill or
+`lyrics.py` changes, update `gpt/instructions.md` and `gpt/suno-album-rules.md` to match and run
+`gpt/build-kit.sh`.
