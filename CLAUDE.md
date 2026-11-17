@@ -32,5 +32,23 @@ layout, and the check-and-fix loop with `lyrics.py album`.
 The tools check counts and sounds, not quality. Imagery, emotion and singability still come first: don't
 force a weak word just to hit a rhyme.
 
+## Evaluating a song's audio (mix, master, arrangement)
+
+You can't hear audio, so look at it. Never comment on how a song sounds without running this first.
+
+1. Get the file into the container. Suno song: take the id from the link, call the Suno `audio-download`
+   tool (ask Moses before it spends a download credit) and `curl -sSfL -o` its url. Also call
+   `audio-analysis` for Suno's own BPM, key and section labels. Otherwise: a file in `inbox/` (pull the
+   branch he uploaded to), or a direct link.
+2. `python audio.py analyze <file>`. It prints the report and writes PNGs to `analysis/<name>/`.
+3. Open every PNG with Read before saying anything: `overview.png` (3-band waveform with red lows, yellow
+   mids and blue highs, plus spectrogram, loudness and stereo width over time), `spectrogram.png`, `balance.png`.
+4. For any spot worth a closer look (a drop, a harsh vocal, a muddy chorus), rerun with
+   `--zoom 1:05-1:25` (repeatable) and read the zoom image.
+5. Tie each claim to what's on the screen: a timestamp, frequency range or number. The detected key,
+   sections and narrow peaks are estimates; say so, and prefer Suno's `audio-analysis` where they differ.
+
+`analysis/` is gitignored. Don't save audio or analysis unless Moses asks.
+
 **Don't save songs or style prompts (files or commits) unless Moses asks.** Give them in the chat. When he
 asks to save, use `songs/` and commit and push.

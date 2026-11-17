@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Install the lyric tools. Run once per session: cloud sessions start fresh.
+# Install the lyric and audio tools. Run once per session: cloud sessions start fresh.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-pip install -q --root-user-action=ignore -r requirements.txt
+pip install -q --root-user-action=ignore -r requirements.txt -r requirements-audio.txt
 
 # WordNet (the thesaurus) is a data file, not a pip package. NLTK's own
 # downloader refuses to run behind a proxy, so fetch the same file directly.
@@ -16,4 +16,6 @@ fi
 
 python3 lyrics.py rhymes fire --limit 1 >/dev/null
 python3 lyrics.py words tired --syllables 1 >/dev/null
-echo "Lyric tools ready."
+command -v ffmpeg >/dev/null || { echo "audio.py needs ffmpeg (apt-get install -y ffmpeg)"; exit 1; }
+python3 -c "import librosa, pyloudnorm, scipy, matplotlib"
+echo "Lyric and audio tools ready."

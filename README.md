@@ -1,12 +1,13 @@
 # Cardinal
 
 Song lyric workshop: syllable counts, stress patterns, rhyme schemes, rhyme and synonym suggestions, and
-checks for Suno songs and albums.
+checks for Suno songs and albums. Plus `audio.py`, which turns a song into spectrograms, colored
+waveforms and loudness numbers.
 
 ## Setup
 
 ```bash
-./setup.sh      # installs the Python packages and the WordNet thesaurus
+./setup.sh      # installs the Python packages (lyrics and audio) and the WordNet thesaurus
 ```
 
 ## Commands
@@ -65,6 +66,34 @@ in `songs/<album-slug>/album.md`, singles in `songs/singles/`.
 - **Genre drift:** words that pulled songs out of their genre. Edit `DRIFT_WORDS` in `lyrics.py` to add more.
 - **Style prompts:** 200-350 characters, with a BPM, a vocal description and no artist names.
 - **Album level:** BPMs spread out, and the tracklist table matching the track sections.
+
+## Looking at a song's audio
+
+```bash
+python audio.py analyze song.mp3                          # report + images in analysis/song/
+python audio.py analyze song.mp3 --zoom 1:05-1:25         # plus a close-up of 1:05-1:25
+```
+
+Any format ffmpeg reads works. The images:
+
+- **overview.png**: one time axis with four panels. A 3-band waveform (red = lows under 250 Hz,
+  yellow = mids, blue = highs over 4 kHz), a spectrogram, short-term loudness, and stereo width.
+  Dashed lines mark detected section changes.
+- **spectrogram.png**: a large Spek-style spectrogram. Black is silence, blue is quiet, then red, then
+  yellow and white for the loudest.
+- **balance.png**: the average spectrum against a pink-noise slope, energy per band, and a vectorscope.
+- **zoom_*.png**: a close-up waveform and spectrogram for each `--zoom` range.
+
+The report (`report.txt`, `report.json`) covers:
+
+- **Loudness:** integrated LUFS, loudness range, true peak, PLR and clipping.
+- **Music:** BPM and estimated key.
+- **Tone:** level per band, the high-frequency cutoff (a brick wall means lossy or generated audio)
+  and narrow spectral peaks.
+- **Stereo:** correlation, low-end mono check and width.
+- **Sections:** loudness, band levels and width for each detected section.
+
+Upload songs to `inbox/` on GitHub to hand them over.
 
 ## How it works
 
