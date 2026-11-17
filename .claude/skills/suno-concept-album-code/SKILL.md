@@ -138,7 +138,7 @@ What the tools check, and what's left to you:
 | No sound-effect words | flags repeated words ("ding ding") | other sound effects |
 | No proper names or media references | flags capitalized words mid-line | references in lowercase |
 | Genre drift words | flags words from a list (edit `DRIFT_WORDS` in `lyrics.py` when a track drifts) | the lane as a whole |
-| Style prompt: 200-350 chars, BPM, vocals, no artist names | yes | the fusion, the arc, the twist |
+| Style prompt: 200-350 chars, BPM, vocals, no artist names, no negations ("not country") | yes | the fusion, the arc, the twist |
 | BPM spread across the album | flags tracks within 5 BPM | |
 | Figurative, angsty-not-cheesy, catchy | no | all of it |
 
@@ -228,6 +228,10 @@ unusual), a specific vocal description, 3-5 concrete instruments with what they 
 vocal range when he gives one. When he supplies his own style prompt, use it word for word unless he allows
 changes. Check each one with `python lyrics.py style "<prompt>"` (the album check does this for every
 track).
+
+**No negations.** Suno can't read "not", "no", "without" or "instead of": it hears the word that follows,
+so "americana, not country" makes it more country. Name only what you want ("dusty desert americana",
+"sparse drums") and leave the unwanted genre out completely.
 
 Reference prompts he rated highest:
 

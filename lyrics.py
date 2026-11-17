@@ -762,6 +762,11 @@ def check_style(prompt: str) -> list[str]:
     if not re.search(r"vocal|voice|sung|singer|tenor|baritone|alto|soprano|falsetto", p, re.I):
         issues.append("no vocal description")
     low = " ".join(tokenize(p))
+    negs = sorted({m.group().lower() for m in re.finditer(
+        r"\b(?:not|no|non|without|never|minus|avoid|instead of|free of|less)\b", p, re.I)})
+    if negs:
+        issues.append("negation (" + ", ".join(negs) + "): Suno ignores it and hears the word that "
+                      "follows, so 'not country' adds country; describe what you want instead")
     for term, lane in DRIFT_WORDS.items():
         if re.search(rf"\b{re.escape(term)}\b", low):
             issues.append(f"'{term}' reads as {lane}")
