@@ -11,7 +11,8 @@ guessing.
 
 ## Suno songs and albums
 
-Never save songs or style prompts unless Moses asks (see the end of this file). For any Suno song or
+Never save songs or style prompts unless Moses asks (see the end of this file). When Moses asks for a **fresh** song, follow the
+project skill `fresh` (`.claude/skills/fresh/SKILL.md`) instead of the rules below. For any other Suno song or
 album, follow the project skill `suno-concept-album-code`
 (`.claude/skills/suno-concept-album-code/SKILL.md`). It has Moses's songwriting rules, the album file
 layout, and the check-and-fix loop with `lyrics.py album`.
