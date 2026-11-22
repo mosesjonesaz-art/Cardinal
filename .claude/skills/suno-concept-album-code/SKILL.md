@@ -27,9 +27,15 @@ These apply to every song, single or album, unless he says otherwise for that so
   the plot outright; let a concrete picture do it.
 - **Catchy beats clever.** Aim for a hook he can hum after one listen: short repeated phrases, the title
   inside the chorus, a melody-friendly shape.
-- **Always a rhyme scheme.** Give every section a deliberate scheme (ABAB, XAXA, and so on) and hold the
-  same scheme across matching sections, so both verses match and both pre-choruses match. Slant rhymes are
-  fine; rhyming a word with itself is not.
+- **Write it twice: literal, then the real text.** First write the whole song out literally, saying
+  exactly what happens and what it means. That's the subtext, and he likes reading it, so show it. Then do
+  a full rewrite over it: same meaning, carried by image and metaphor, open enough that the listener has
+  to guess a little. Rename things instead of naming them, and cut plot words. The rewrite is the version
+  to generate. Each track's note states the subtext ("Subtext: ...").
+- **Always a rhyme scheme, mostly AABB.** Give every section a deliberate scheme and hold it across
+  matching sections, so both verses match and both pre-choruses match. He prefers AABB couplets for most
+  sections; choruses and bridges can break the pattern for the hook. Slant rhymes are fine; rhyming a word
+  with itself is not.
 - **Internal rhymes sometimes.** Now and then put a rhyme inside a line too, a word mid-line that chimes
   with the line's end or the next line's middle. Use it for lift, not on every line.
 - **Lean choruses.** Minimize words and syllables in the chorus: the fewest that still carry the hook and
@@ -99,7 +105,8 @@ Claude doc, publish to one with the docs tools, when available.
 ## Workflow
 
 1. Draft the tracklist and threads first, then each track.
-2. Write each track's lyrics and style prompt in the layout above.
+2. Write each track's lyrics and style prompt in the layout above: the literal draft first, then the full
+   rewrite over it (see "Write it twice" above). Check both passes.
 3. Check it by piping the text in (`-` reads stdin), so nothing is saved:
    ```bash
    python lyrics.py album - --track 1 <<'EOF'

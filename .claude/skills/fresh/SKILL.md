@@ -16,6 +16,24 @@ Before writing a style prompt or a lyric, understand what the song is about: who
 just happened, and what it feels like from inside. If you can't say that plainly to yourself, you don't
 understand it yet. Keep thinking until you do. Then write the style prompt and lyrics to serve it.
 
+## Two passes: the literal draft, then the real text
+
+Moses asked for this on every song from now on. Write the lyrics twice:
+
+1. **The literal draft.** Write the whole song out, every section, saying exactly what happens and what it
+   means, nail on the head. This is the subtext. He likes reading it, so show it to him.
+2. **The real text.** Do a full rewrite on top of it. Keep every beat of the meaning, but carry it in
+   image, symbol and metaphor, so the listener has to guess a little. Rename things instead of naming
+   them: fire became "flowers" and "bouquets", matches "little red saints", the alarm "every bell in the
+   city", the insured landlord "I'm covered". Plot words (job titles, procedures, places, the exact thing
+   being done) go. Strong hooks and lines that are already images can stay. This rewrite is the version he
+   generates.
+
+In each track's note, say the subtext plainly ("Subtext: ...") so the literal meaning stays on record.
+
+**Rhyme:** when the song rhymes, use mostly AABB couplets. Choruses and bridges can break the pattern for
+the hook.
+
 ## Style prompt design
 
 These lessons come from measuring Suno takes against the prompts that made them, in the audio analysis
