@@ -23,11 +23,14 @@ Moses asked for this on every song from now on. Write the lyrics twice:
 1. **The literal draft.** Write the whole song out, every section, saying exactly what happens and what it
    means, nail on the head. This is the subtext. He likes reading it, so show it to him.
 2. **The real text.** Do a full rewrite on top of it. Keep every beat of the meaning, but carry it in
-   image, symbol and metaphor, so the listener has to guess a little. Rename things instead of naming
-   them: fire became "flowers" and "bouquets", matches "little red saints", the alarm "every bell in the
-   city", the insured landlord "I'm covered". Plot words (job titles, procedures, places, the exact thing
-   being done) go. Strong hooks and lines that are already images can stay. This rewrite is the version he
-   generates.
+   image, symbol and metaphor, so the listener has to guess. Go further than feels necessary: if someone
+   could retell the plot from the lyrics alone, it's still too literal (his note on the second rewrite of
+   "Sweetheart, the Whole Block's Burning"). Build one symbol set for the whole song or album and hold it.
+   On that album, fire became summer, July and blooming; ash became warm snow; the firefighter became rain;
+   the fire escape became the midnight stairs; the alarm became every bell in the city; the insured
+   landlord became "I'm covered". Keep plot nouns out entirely: job gear, procedures, place names, counts
+   ("fourth floor"), and the plain words for the thing itself ("fire", "smoke", "sirens"). Strong hooks
+   that are already images can stay. This rewrite is the version he generates.
 
 In each track's note, say the subtext plainly ("Subtext: ...") so the literal meaning stays on record.
 

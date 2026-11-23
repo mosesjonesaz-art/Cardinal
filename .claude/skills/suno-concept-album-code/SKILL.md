@@ -30,7 +30,9 @@ These apply to every song, single or album, unless he says otherwise for that so
 - **Write it twice: literal, then the real text.** First write the whole song out literally, saying
   exactly what happens and what it means. That's the subtext, and he likes reading it, so show it. Then do
   a full rewrite over it: same meaning, carried by image and metaphor, open enough that the listener has
-  to guess a little. Rename things instead of naming them, and cut plot words. The rewrite is the version
+  to guess. If someone could retell the plot from the lyrics alone, it's still too literal. Build one
+  symbol set for the album and hold it (fire = summer and July, the hero = rain), and cut plot nouns
+  entirely: gear, procedures, counts, and the plain words for the thing itself. The rewrite is the version
   to generate. Each track's note states the subtext ("Subtext: ...").
 - **Always a rhyme scheme, mostly AABB.** Give every section a deliberate scheme and hold it across
   matching sections, so both verses match and both pre-choruses match. He prefers AABB couplets for most
